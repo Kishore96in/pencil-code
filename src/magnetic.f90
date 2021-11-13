@@ -1955,6 +1955,9 @@ module Magnetic
         case ('gaussian-noise-zprof2')
           tmp=amplaa(1)*0.5*(tanh((z-znoise_int)/0.05)-tanh((z-znoise_ext)/0.05))
           call gaunoise(tmp,f,iax,iaz)
+        case ('gaussian-noise-zprof3')
+          tmp=amplaa(j)*cos(pi*z/2)
+          call gaunoise(tmp,f,iax,iaz)
 !
 !  ABC field (includes Beltrami fields when only one coefficient /= 0)
 !
