@@ -645,6 +645,17 @@ module Forcing
         enddo
         profz_ampl=1.; profz_hel=1.
 !
+!  cos(x)**2*cos(y)**2 modulation of forcing amplitude, and
+!  turn off helicity above z=r_ff_hel over a width width_ff.
+!
+      elseif (iforce_profile=='cos^2xcos^2y_stepz') then
+        profx_ampl=cos(kx_ff*x(l1:l2))**2
+        profx_hel=1.
+        profy_ampl=cos(ky_ff*y)**2
+        profy_hel=1.
+        profz_ampl=1.
+        profz_hel=.5*(1.-erfunc((z-r_ff_hel)/width_ff))
+!
 !  turn off forcing intensity above x=x0
 !
       elseif (iforce_profile=='surface_x') then
