@@ -128,7 +128,7 @@ module Forcing
   real, dimension (mx,n_forcing_cont_max) :: phi2_ff
   real, dimension (mx,n_forcing_cont_max) :: sinx,cosx,sinxt,cosxt,embedx
   real, dimension (my,n_forcing_cont_max) :: siny,cosy,sinyt,cosyt,embedy
-  real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz
+  real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz,stepz
   real, dimension (100,n_forcing_cont_max) :: xi_GP,eta_GP
 !
   namelist /forcing_run_pars/ &
