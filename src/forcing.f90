@@ -1001,7 +1001,7 @@ module Forcing
         elseif (iforcing_cont(i)=='(0,0,cosxcosystepz)') then
           cosx(:,i)=cos(kf_fcont(i)*x)
           cosy(:,i)=cos(kf_fcont(i)*y)
-          stepz(:,i)=.5*(1.+erfunc((z-z_fcont)/width_fcont))
+          stepz(:,i)=.5*(1.+erfunc((z-z_fcont(i))/width_fcont(i)))
         elseif (iforcing_cont(i)=='B=(0,0,cosxcosy)') then
           sinx(:,i)=sin(kf_fcont(i)*x)
           siny(:,i)=sin(kf_fcont(i)*y)
