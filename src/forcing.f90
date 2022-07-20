@@ -108,7 +108,7 @@ module Forcing
   logical :: lembed=.false.,lshearing_adjust_old=.false.
   logical, dimension(n_forcing_cont_max) :: lgentle=.false.
   character (len=labellen), dimension(n_forcing_cont_max) :: iforcing_cont='nothing'
-  real, dimension(n_forcing_cont_max) :: ampl_ff=1., ampl1_ff=0., width_fcont=1., x1_fcont=0., x2_fcont=0.
+  real, dimension(n_forcing_cont_max) :: ampl_ff=1., ampl1_ff=0., width_fcont=1., x1_fcont=0., x2_fcont=0., z_fcont=0.
   real, dimension(n_forcing_cont_max) :: kf_fcont=impossible, kf_fcont_x=impossible, kf_fcont_y=impossible, kf_fcont_z=impossible
   real, dimension(n_forcing_cont_max) :: omega_fcont=0., omegay_fcont=0., omegaz_fcont=0.
   real, dimension(n_forcing_cont_max) :: eps_fcont=0., tgentle=0., z_center_fcont=0.
@@ -155,7 +155,7 @@ module Forcing
        ABC_A, ABC_B, ABC_C, &
        lforcing_cont,iforcing_cont, z_center_fcont, z_center, &
        lembed, k1_ff, ampl_ff, ampl1_ff, width_fcont, x1_fcont, x2_fcont, &
-       kf_fcont, omega_fcont, omegay_fcont, omegaz_fcont, eps_fcont, &
+       z_fcont, kf_fcont, omega_fcont, omegay_fcont, omegaz_fcont, eps_fcont, &
        lsamesign, lshearing_adjust_old, equator, &
        lscale_kvector_fac,scale_kvectorx,scale_kvectory,scale_kvectorz, &
        lforce_peri,lforce_cuty,lforcing2_same,lforcing2_curl, &
@@ -998,6 +998,10 @@ module Forcing
         elseif (iforcing_cont(i)=='(0,0,cosxcosy)') then
           cosx(:,i)=cos(kf_fcont(i)*x)
           cosy(:,i)=cos(kf_fcont(i)*y)
+        elseif (iforcing_cont(i)=='(0,0,cosxcosystepz)') then
+          cosx(:,i)=cos(kf_fcont(i)*x)
+          cosy(:,i)=cos(kf_fcont(i)*y)
+          stepz(:,i)=.5*(1.+erfunc((z-z_fcont)/width_fcont))
         elseif (iforcing_cont(i)=='B=(0,0,cosxcosy)') then
           sinx(:,i)=sin(kf_fcont(i)*x)
           siny(:,i)=sin(kf_fcont(i)*y)
@@ -5769,6 +5773,13 @@ call fatal_error('hel_vec','radial profile should be quenched')
           force(:,1)=0.
           force(:,2)=0.
           force(:,3)=ampl_ff(i)*cosx(l1:l2,i)*cosy(m,i)
+!
+!  f=(0,0,cosx*cosy*stepz) . Turns on continuous forcing above z_fcont over a width width_fcont
+!
+        case ('(0,0,cosxcosystepz)')
+          force(:,1)=0.
+          force(:,2)=0.
+          force(:,3)=ampl_ff(i)*cosx(l1:l2,i)*cosy(m,i)*stepz(n,i)
 !
 !  f=B=(0,0,cosx*cosy)
 !
