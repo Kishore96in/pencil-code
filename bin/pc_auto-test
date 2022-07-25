@@ -144,6 +144,7 @@ my %tests = (
              # Level 3 for now contains all non-canonical tests that run
              # successfully
              3 => [qw(
+                         continuous-forcing-from-file
                          0d-tests/heating_ionize_planck
                          1d-tests/jeans-drag-dustpar-x
                          1d-tests/jeans-x
