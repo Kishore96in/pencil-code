@@ -1038,7 +1038,7 @@ module Forcing
         elseif (iforcing_cont(i)=='from_file') then
           ! To create forcing_cont.dat, see function pc.util.write_forcing_cont in the Python module.
           if (lroot.and.ip<14) print*,'initialize_forcing: opening forcing_cont.dat'
-          open(1,file='forcing_cont.dat',form='old')
+          open(1,file='forcing_cont.dat',status='old')
           read(1,*) forcing_cont_from_file
           close(1)
         endif
