@@ -130,6 +130,7 @@ module Forcing
   real, dimension (my,n_forcing_cont_max) :: siny,cosy,sinyt,cosyt,embedy
   real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz
   real, dimension (100,n_forcing_cont_max) :: xi_GP,eta_GP
+  real, dimension (3,nx,ny,nz) :: forcing_cont_from_file
 !
   namelist /forcing_run_pars/ &
        tforce_start,tforce_start2,&
@@ -1034,6 +1035,12 @@ module Forcing
         !call random_isotropic_KS_setup(-5./3.,1.,(nxgrid)/2.) !old form
         call random_isotropic_KS_setup_test !Test KS model code with 3 specific
         !modes.
+        elseif (iforcing_cont(i)=='from_file') then
+          ! To create forcing_cont.dat, see function pc.util.write_forcing_cont in the Python module.
+          if (lroot.and.ip<14) print*,'initialize_forcing: opening forcing_cont.dat'
+          open(1,file='forcing_cont.dat',form='old')
+          read(1,*) forcing_cont_from_file
+          close(1)
         endif
       enddo
       if (lroot .and. n_forcing_cont==0) &
@@ -5958,6 +5965,13 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !
         case('zero')
           force=0.
+!
+!   Read forcing profile from file
+!
+        case('from_file')
+          force(:,1) = forcing_cont_from_file(1,l1:l2,m,n)
+          force(:,2) = forcing_cont_from_file(2,l1:l2,m,n)
+          force(:,3) = forcing_cont_from_file(3,l1:l2,m,n)
 !
 !  nothing (But why not? Could just replace by a warning.)
 !
