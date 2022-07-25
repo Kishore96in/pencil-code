@@ -8,15 +8,16 @@ def write_forcing_cont(a, outfile="forcing_cont.dat"):
     Parameters
     ----------
     a : numpy array specifying the continuous forcing. Shape is expected to be (3,nx,ny,nz). Will be converted to Fortran ordering before writing.
+    
     outfile : file into which the array should be written
 
     Example usage
     -------------
-    import pencil as pc
-    import numpy as np
-    dim = pc.read.dim()
-    a = np.ones((3,dim.nx,dim.ny,dim.nz))
-    pc.util.write_forcing_cont(a)
+    >>> import pencil as pc
+    >>> import numpy as np
+    >>> dim = pc.read.dim()
+    >>> a = np.ones((3,dim.nx,dim.ny,dim.nz))
+    >>> pc.util.write_forcing_cont(a)
     """
     a_ = np.reshape(a, np.shape(a), order="F")
 
