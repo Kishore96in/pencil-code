@@ -5969,9 +5969,9 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !   Read forcing profile from file
 !
         case('from_file')
-          force(:,1) = forcing_cont_from_file(1,l1:l2,m,n)
-          force(:,2) = forcing_cont_from_file(2,l1:l2,m,n)
-          force(:,3) = forcing_cont_from_file(3,l1:l2,m,n)
+          force(:,1) = ampl_ff(i)*forcing_cont_from_file(1,l1:l2,m,n)
+          force(:,2) = ampl_ff(i)*forcing_cont_from_file(2,l1:l2,m,n)
+          force(:,3) = ampl_ff(i)*forcing_cont_from_file(3,l1:l2,m,n)
 !
 !  nothing (But why not? Could just replace by a warning.)
 !
