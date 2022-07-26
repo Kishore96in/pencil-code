@@ -7,7 +7,7 @@ def write_forcing_cont(a, outfile="forcing_cont.dat"):
 
     Parameters
     ----------
-    a : numpy array specifying the continuous forcing. Shape is expected to be (3,nx,ny,nz). Note the order of the spatial indices.
+    a : numpy array specifying the continuous forcing. Shape is expected to be (3,nz,ny,nx). Note that the order of the spatial indices is the same as in the rest of the Pencil Python module.
     
     outfile : file into which the array should be written
 
@@ -19,6 +19,7 @@ def write_forcing_cont(a, outfile="forcing_cont.dat"):
     >>> a = np.ones((3,dim.nx,dim.ny,dim.nz))
     >>> pc.util.write_forcing_cont(a)
     """
+    a = np.transpose(a, axes=[0,3,2,1]) #flip order of spatial axes to what the Fortran code uses
     a_ = np.reshape(a, np.shape(a), order="F")
 
     with open(outfile, "w") as f:
