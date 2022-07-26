@@ -7,7 +7,7 @@ def write_forcing_cont(a, outfile="forcing_cont.dat"):
 
     Parameters
     ----------
-    a : numpy array specifying the continuous forcing. Shape is expected to be (3,nx,ny,nz). Will be converted to Fortran ordering before writing.
+    a : numpy array specifying the continuous forcing. Shape is expected to be (3,nx,ny,nz). Note the order of the spatial indices.
     
     outfile : file into which the array should be written
 
