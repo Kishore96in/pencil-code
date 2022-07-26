@@ -18,7 +18,7 @@
   lupw_lnrho=T
 /
 &forcing_run_pars
-  lff_as_aux=T
+  lff_as_aux=T !Only needed for the Python test script
   
   lforcing_cont=T
   iforcing_cont='from_file'
