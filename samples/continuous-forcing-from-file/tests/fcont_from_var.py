@@ -17,4 +17,5 @@ Check if the file created by generate_forcing_cont.py was correctly read by forc
 var = pc.read.var(trimall=True, datadir="../data")
 force_from_var = np.stack([var.fx, var.fy, var.fz])
 with open('fcont_from_var.out', 'w') as f:
-	f.write(np.array2string(force_from_var))
+	for elem, i in zip(np.nditer(force_from_var), range(0, np.size(force_from_var))):
+		f.write("{}\n".format(elem))
