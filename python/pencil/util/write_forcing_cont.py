@@ -26,11 +26,7 @@ def write_forcing_cont(a, outfile="forcing_cont.dat"):
         """
         Documention for list-directed IO: https://docs.oracle.com/cd/E19957-01/805-4939/6j4m0vnc5/index.html
 
-        Apparently tabs cause problems in some Fortran compilers, so we have to use spaces in the output.
+        Note that tabs apparently cause problems in some Fortran compilers.
         """
-        nrec = 6  # number of records per line. Just an arbitrary number.
         for elem, i in zip(np.nditer(a_, order="F"), range(0, np.size(a_))):
-            if i != 0 and i % nrec == 0:
-                f.write("\n")
-            f.write("    {}".format(elem))
-        f.write("\n")
+            f.write("{}\n".format(elem))
