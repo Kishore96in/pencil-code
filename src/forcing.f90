@@ -5552,6 +5552,7 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !   9-apr-10/MR: added RobertsFlow_exact forcing, compensates \nu\nabla^2 u
 !                and u.grad u for Roberts geometry
 !   4-nov-11/MR: now also compensates Coriolis force
+!   27-jul-22/Kishore G: Added ability to read forcing function from a file.
 !
 !  Note: It is not enough to set lforcing_cont = T in input parameters of
 !  forcing one must also set  lforcing_cont_uu = T in hydro for the
