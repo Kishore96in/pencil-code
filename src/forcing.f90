@@ -130,7 +130,7 @@ module Forcing
   real, dimension (my,n_forcing_cont_max) :: siny,cosy,sinyt,cosyt,embedy
   real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz
   real, dimension (100,n_forcing_cont_max) :: xi_GP,eta_GP
-  real, dimension (3,nx,ny,nz) :: forcing_cont_from_file
+  real, dimension (3,nx,ny,nz) :: fcont_from_file
 !
   namelist /forcing_run_pars/ &
        tforce_start,tforce_start2,&
@@ -1039,7 +1039,7 @@ module Forcing
           ! To create forcing_cont.dat, see function pc.util.write_forcing_cont in the Python module.
           if (lroot.and.ip<14) print*,'initialize_forcing: opening forcing_cont.dat'
           open(1,file='forcing_cont.dat',status='old')
-          read(1,*) forcing_cont_from_file
+          read(1,*) fcont_from_file
           close(1)
         endif
       enddo
@@ -5969,9 +5969,9 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !   Read forcing profile from file
 !
         case('from_file')
-          force(:,1) = ampl_ff(i)*forcing_cont_from_file(1,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
-          force(:,2) = ampl_ff(i)*forcing_cont_from_file(2,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
-          force(:,3) = ampl_ff(i)*forcing_cont_from_file(3,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
+          force(:,1) = ampl_ff(i)*fcont_from_file(1,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
+          force(:,2) = ampl_ff(i)*fcont_from_file(2,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
+          force(:,3) = ampl_ff(i)*fcont_from_file(3,l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx,m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
 !
 !  nothing (But why not? Could just replace by a warning.)
 !
