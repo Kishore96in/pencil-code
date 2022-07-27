@@ -130,7 +130,7 @@ module Forcing
   real, dimension (my,n_forcing_cont_max) :: siny,cosy,sinyt,cosyt,embedy
   real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz
   real, dimension (100,n_forcing_cont_max) :: xi_GP,eta_GP
-  real, dimension (3,nx,ny,nz) :: fcont_from_file
+  real, dimension (3,nxgrid,nygrid,nzgrid) :: fcont_from_file
 !
   namelist /forcing_run_pars/ &
        tforce_start,tforce_start2,&
