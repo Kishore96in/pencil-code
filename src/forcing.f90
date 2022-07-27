@@ -44,7 +44,7 @@ module Forcing
   real :: tforce_start=0.,tforce_start2=0.
   real :: wff_ampl=0.,  xff_ampl=0.,  yff_ampl=0.,  zff_ampl=0.
   real :: wff2_ampl=0., xff2_ampl=0., yff2_ampl=0., zff2_ampl=0.
-  real :: zff_hel=0.,max_force=impossible
+  real :: zff_hel=0., zff2_hel=0., max_force=impossible
   real :: dtforce=0., dtforce_ampl=.5, dtforce_duration=-1.0, force_strength=0.
   double precision :: tforce_ramp_down=1.1, tauforce_ramp_down=1.
   real, dimension(3) :: force_direction=(/0.,0.,0./)
@@ -140,7 +140,7 @@ module Forcing
        radius_ff,k1_ff,kx_ff,ky_ff,kz_ff,slope_ff,work_ff,lmomentum_ff, &
        omega_ff, omega_double_ff, n_equator_ff, location_fixed, lrandom_location, nlocation, &
        lwrite_gausspot_to_file,lwrite_gausspot_to_file_always, &
-       wff_ampl, xff_ampl, yff_ampl, zff_ampl, zff_hel, &
+       wff_ampl, xff_ampl, yff_ampl, zff_ampl, zff2_ampl, zff_hel, zff2_hel, &
        wff2_ampl, xff2_ampl,yff2_ampl, zff2_ampl, &
        lhydro_forcing, lneutral_forcing, lmagnetic_forcing, &
        ltestfield_forcing, ltestflow_forcing, &
@@ -645,17 +645,20 @@ module Forcing
         enddo
         profz_ampl=1.; profz_hel=1.
 !
-!  cos(x)**2*cos(y)**2 modulation of forcing amplitude, and
-!  turn off helicity above z=r_ff_hel over a width width_ff.
-!  Forcing itself is turned off above z=r_ff over a width width_ff.
+!  cos(x)**2*cos(y)**2 modulation of forcing amplitude. Forcing amplitude is nonzero for zff_ampl<z<zff2_ampl. When zff_hel/=zff2_hel, forcing is helical for zff_hel<z<zff2_hel.
 !
-      elseif (iforce_profile=='cos^2xcos^2y_stepz') then
+      elseif (iforce_profile=='cos^2xcos^2y_zlayer') then
         profx_ampl=cos(kx_ff*x(l1:l2))**2
         profx_hel=1.
         profy_ampl=cos(ky_ff*y)**2
         profy_hel=1.
-        profz_ampl=.5*(1.-erfunc((z-r_ff)/width_ff))
-        profz_hel=.5*(1.-erfunc((z-r_ff_hel)/width_ff))
+        profz_ampl=.5*(1.+erfunc((z-zff_ampl)/wff_ampl)) &
+                   -.5*(1.+erfunc((z-zff2_ampl)/wff2_ampl))
+        if (zff_hel/=zff2_hel) then
+          profz_hel=.5*(1.+erfunc((z-zff_hel)/width_ff)) &
+                    -.5*(1.+erfunc((z-zff2_hel)/width_ff))
+        else
+          profz_hel=1.
 !
 !  turn off forcing intensity above x=x0
 !
