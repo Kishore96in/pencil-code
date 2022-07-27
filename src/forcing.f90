@@ -140,8 +140,8 @@ module Forcing
        radius_ff,k1_ff,kx_ff,ky_ff,kz_ff,slope_ff,work_ff,lmomentum_ff, &
        omega_ff, omega_double_ff, n_equator_ff, location_fixed, lrandom_location, nlocation, &
        lwrite_gausspot_to_file,lwrite_gausspot_to_file_always, &
-       wff_ampl, xff_ampl, yff_ampl, zff_ampl, zff2_ampl, zff_hel, zff2_hel, &
-       wff2_ampl, xff2_ampl,yff2_ampl, zff2_ampl, &
+       wff_ampl, xff_ampl, yff_ampl, zff_ampl, zff_hel, &
+       wff2_ampl, xff2_ampl,yff2_ampl, zff2_ampl, zff2_hel, &
        lhydro_forcing, lneutral_forcing, lmagnetic_forcing, &
        ltestfield_forcing, ltestflow_forcing, &
        lcrosshel_forcing, lxxcorr_forcing, lxycorr_forcing, &
