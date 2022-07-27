@@ -5970,15 +5970,16 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !   Read forcing profile from file
 !
         case('from_file')
-          force(:,1) = ampl_ff(i)*fcont_from_file(1, &
-            l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx, &
-            m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
-          force(:,2) = ampl_ff(i)*fcont_from_file(2, &
-            l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx, &
-            m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
-          force(:,3) = ampl_ff(i)*fcont_from_file(3, &
-            l1-nghost+ipx*nxgrid/nprocx:l2-nghost+ipx*nxgrid/nprocx, &
-            m-nghost+ipy*nygrid/nprocy,n-nghost+ipz*nzgrid/nprocz)
+          force(:,1) = fcont_from_file(1, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force(:,2) = fcont_from_file(2, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force(:,3) = fcont_from_file(3, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force=ampl_ff(i)*force
 !
 !  nothing (But why not? Could just replace by a warning.)
 !
