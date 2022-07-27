@@ -659,6 +659,7 @@ module Forcing
                     -.5*(1.+erfunc((z-zff2_hel)/width_ff))
         else
           profz_hel=1.
+        endif
 !
 !  turn off forcing intensity above x=x0
 !
