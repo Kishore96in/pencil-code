@@ -87,7 +87,7 @@ class __Simulation__(object):
         # files in which quanitities can be searched
         self.quantity_searchables = ["src/cparam.local", "start.in", "run.in"]
         # optional files that should stick with the simulation when copied
-        self.optionals = ["*.in", "*.py", "submit*"]
+        self.optionals = ["*.in", "*.py", "submit*", "k.dat"]
         # files required from a simulation start
         self.start_components = [
             "index.pro",

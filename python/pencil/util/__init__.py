@@ -13,6 +13,7 @@ import re
 
 MARKER_FILES = ["run.in", "start.in", "src/cparam.local", "src/Makefile.local"]
 
+from .write_forcing_cont import *
 
 def is_sim_dir(path="."):
     """Decide if a path is pointing at a pencil code simulation directory.

@@ -44,7 +44,7 @@ module Forcing
   real :: tforce_start=0.,tforce_start2=0.
   real :: wff_ampl=0.,  xff_ampl=0.,  yff_ampl=0.,  zff_ampl=0.
   real :: wff2_ampl=0., xff2_ampl=0., yff2_ampl=0., zff2_ampl=0.
-  real :: zff_hel=0.,max_force=impossible
+  real :: zff_hel=0., zff2_hel=0., max_force=impossible
   real :: dtforce=0., dtforce_ampl=.5, dtforce_duration=-1.0, force_strength=0.
   double precision :: tforce_ramp_down=1.1, tauforce_ramp_down=1.
   real, dimension(3) :: force_direction=(/0.,0.,0./)
@@ -130,6 +130,7 @@ module Forcing
   real, dimension (my,n_forcing_cont_max) :: siny,cosy,sinyt,cosyt,embedy
   real, dimension (mz,n_forcing_cont_max) :: sinz,cosz,sinzt,coszt,embedz,stepz
   real, dimension (100,n_forcing_cont_max) :: xi_GP,eta_GP
+  real, dimension (3,nxgrid,nygrid,nzgrid) :: fcont_from_file
 !
   namelist /forcing_run_pars/ &
        tforce_start,tforce_start2,&
@@ -141,7 +142,7 @@ module Forcing
        omega_ff, omega_double_ff, n_equator_ff, location_fixed, lrandom_location, nlocation, &
        lwrite_gausspot_to_file,lwrite_gausspot_to_file_always, &
        wff_ampl, xff_ampl, yff_ampl, zff_ampl, zff_hel, &
-       wff2_ampl, xff2_ampl,yff2_ampl, zff2_ampl, &
+       wff2_ampl, xff2_ampl,yff2_ampl, zff2_ampl, zff2_hel, &
        lhydro_forcing, lneutral_forcing, lmagnetic_forcing, &
        ltestfield_forcing, ltestflow_forcing, &
        lcrosshel_forcing, lxxcorr_forcing, lxycorr_forcing, &
@@ -645,6 +646,22 @@ module Forcing
         enddo
         profz_ampl=1.; profz_hel=1.
 !
+!  cos(x)**2*cos(y)**2 modulation of forcing amplitude. Forcing amplitude is nonzero for zff_ampl<z<zff2_ampl. When zff_hel/=zff2_hel, forcing is helical for zff_hel<z<zff2_hel.
+!
+      elseif (iforce_profile=='cos^2xcos^2y_zlayer') then
+        profx_ampl=cos(kx_ff*x(l1:l2))**2
+        profx_hel=1.
+        profy_ampl=cos(ky_ff*y)**2
+        profy_hel=1.
+        profz_ampl=.5*(1.+erfunc((z-zff_ampl)/wff_ampl)) &
+                   -.5*(1.+erfunc((z-zff2_ampl)/wff2_ampl))
+        if (zff_hel/=zff2_hel) then
+          profz_hel=.5*(1.+erfunc((z-zff_hel)/width_ff)) &
+                    -.5*(1.+erfunc((z-zff2_hel)/width_ff))
+        else
+          profz_hel=1.
+        endif
+!
 !  turn off forcing intensity above x=x0
 !
       elseif (iforce_profile=='surface_x') then
@@ -1038,6 +1055,12 @@ module Forcing
         !call random_isotropic_KS_setup(-5./3.,1.,(nxgrid)/2.) !old form
         call random_isotropic_KS_setup_test !Test KS model code with 3 specific
         !modes.
+        elseif (iforcing_cont(i)=='from_file') then
+          ! To create forcing_cont.dat, see function pc.util.write_forcing_cont in the Python module.
+          if (lroot.and.ip<14) print*,'initialize_forcing: opening forcing_cont.dat'
+          open(1,file='forcing_cont.dat',status='old')
+          read(1,*) fcont_from_file
+          close(1)
         endif
       enddo
       if (lroot .and. n_forcing_cont==0) &
@@ -5549,6 +5572,7 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !   9-apr-10/MR: added RobertsFlow_exact forcing, compensates \nu\nabla^2 u
 !                and u.grad u for Roberts geometry
 !   4-nov-11/MR: now also compensates Coriolis force
+!   27-jul-22/Kishore G: Added ability to read forcing function from a file.
 !
 !  Note: It is not enough to set lforcing_cont = T in input parameters of
 !  forcing one must also set  lforcing_cont_uu = T in hydro for the
@@ -5969,6 +5993,20 @@ call fatal_error('hel_vec','radial profile should be quenched')
 !
         case('zero')
           force=0.
+!
+!   Read forcing profile from file
+!
+        case('from_file')
+          force(:,1) = fcont_from_file(1, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force(:,2) = fcont_from_file(2, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force(:,3) = fcont_from_file(3, &
+                                       l1-nghost+ipx*nx:l2-nghost+ipx*nx, &
+                                       m-nghost+ipy*ny,n-nghost+ipz*nz)
+          force=ampl_ff(i)*force
 !
 !  nothing (But why not? Could just replace by a warning.)
 !

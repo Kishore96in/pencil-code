@@ -329,6 +329,7 @@ module Energy
 !
 ! xy averaged diagnostics given in xyaver.in
 !
+  integer :: idiag_csmz=0      ! XYAVG_DOC: $\left<c_s\right>_{xy}$
   integer :: idiag_fradz=0      ! XYAVG_DOC: $\left<F_{\rm rad}\right>_{xy}$
   integer :: idiag_fconvz=0     ! XYAVG_DOC: $\left<c_p \varrho u_z T \right>_{xy}$
   integer :: idiag_Fenthz=0     ! XYAVG_DOC: $\left<c_p (\varrho u_z)' T' \right>_{xy}$
@@ -3079,7 +3080,7 @@ module Energy
         lpenc_diagnos(i_TT)=.true.
         lpenc_diagnos(i_glnTT)=.true.
       endif
-      if (idiag_cs2mphi/=0) lpenc_diagnos(i_cs2)=.true.
+      if (idiag_cs2mphi/=0 .or. idiag_csmz/=0) lpenc_diagnos(i_cs2)=.true.
 !
 !  diagnostics for baroclinic term
 !
@@ -3609,6 +3610,7 @@ module Energy
 !
       if (l1davgfirst) then
 !
+        if (idiag_csmz/=0) call xysum_mn_name_z(sqrt(p%cs2),idiag_csmz)
         if (idiag_ethmz/=0) call xysum_mn_name_z(p%rho*p%ee,idiag_ethmz)
         if (idiag_fradz/=0) call xysum_mn_name_z(-hcond0*p%gTT(:,3),idiag_fradz)
         if (idiag_fconvz/=0) call xysum_mn_name_z(p%cp*p%rho*p%uu(:,3)*p%TT,idiag_fconvz)
@@ -6845,7 +6847,7 @@ module Energy
         idiag_ssmax=0; idiag_ssmin=0; idiag_gTmax=0; idiag_csmax=0
         idiag_gTrms=0; idiag_gsrms=0; idiag_gTxgsrms=0
         idiag_fconvm=0; idiag_fconvz=0; idiag_dcoolz=0; idiag_heatmz=0; idiag_fradz=0
-        idiag_Fenthz=0; idiag_Fenthupz=0; idiag_Fenthdownz=0
+        idiag_csmz=0; idiag_Fenthz=0; idiag_Fenthupz=0; idiag_Fenthdownz=0
         idiag_fturbz=0; idiag_ppmx=0; idiag_ppmy=0; idiag_ppmz=0
         idiag_fturbtz=0; idiag_fturbmz=0; idiag_fturbfz=0
         idiag_ssmx=0; idiag_ss2mx=0; idiag_ssmy=0; idiag_ssmz=0; idiag_ss2mz=0
@@ -6959,6 +6961,7 @@ module Energy
 !  Check for those quantities for which we want xy-averages.
 !
       do inamez=1,nnamez
+        call parse_name(inamez,cnamez(inamez),cformz(inamez),'csmz',idiag_csmz)
         call parse_name(inamez,cnamez(inamez),cformz(inamez),'fturbz',idiag_fturbz)
         call parse_name(inamez,cnamez(inamez),cformz(inamez),'fturbtz',idiag_fturbtz)
         call parse_name(inamez,cnamez(inamez),cformz(inamez),'fturbmz',idiag_fturbmz)
