@@ -1114,7 +1114,6 @@ module HDF5_IO
             print *, "    KG: read, pos=", pos, ", time=", time !DEBUG
           enddo
         endif
-        backspace (lun_input) !Needed because endfile truncates after the current line.
         endfile (lun_input)
         if (ip <= 10) print *, 'trim_average: trimmed '//trim(plane)//'-averages for t >= ', t
       endif
