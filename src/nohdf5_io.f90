@@ -1100,6 +1100,7 @@ module HDF5_IO
 !
       if ((time >= t) .and. (ioerr == 0)) then
         ! trim excess data at the end of the average file
+        print *, "KG: going to trim, time=", time !DEBUG
         rewind(lun_input)
         if (num_rec > 0) then
           do pos = 1, num_rec
