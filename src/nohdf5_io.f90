@@ -1111,6 +1111,7 @@ module HDF5_IO
               read(lun_input, *, iostat=ioerr) time
               read(lun_input, *, iostat=ioerr) tmp
             endif
+            print *, "    KG: read, pos=", pos, ", time=", time !DEBUG
           enddo
         endif
         endfile (lun_input)
