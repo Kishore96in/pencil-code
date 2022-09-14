@@ -1096,10 +1096,10 @@ module HDF5_IO
         endif
       enddo
       print *, "KG: ioerr=", ioerr, ", time=", time, ", num_rec=", num_rec, ", t=", t !DEBUG
-      if (time >= t) num_rec = num_rec - 1
 !
       if ((time >= t) .and. (ioerr == 0)) then
         ! trim excess data at the end of the average file
+        num_rec = num_rec - 1 !The last record read would've had time >= t, so we don't want to keep that.
         print *, "KG: going to trim, time=", time, ", num_rec=", num_rec, ", t=", t !DEBUG
         rewind(lun_input)
         if (num_rec > 0) then
