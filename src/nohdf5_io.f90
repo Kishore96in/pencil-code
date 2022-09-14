@@ -1095,7 +1095,7 @@ module HDF5_IO
           read(lun_input, *, iostat=ioerr) tmp
         endif
       enddo
-      if (ioerr/=0) print *, "KG: ioerr, time=", time !DEBUG
+      print *, "KG: ioerr=", ioerr, ", time=", time !DEBUG
       if (time == t) num_rec = num_rec - 1
 !
       if ((time >= t) .and. (ioerr == 0)) then
