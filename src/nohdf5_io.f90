@@ -1096,7 +1096,7 @@ module HDF5_IO
         endif
       enddo
       print *, "KG: ioerr=", ioerr, ", time=", time, ", num_rec=", num_rec, ", t=", t !DEBUG
-      if (time == t) num_rec = num_rec - 1
+      if (time >= t) num_rec = num_rec - 1
 !
       if ((time >= t) .and. (ioerr == 0)) then
         ! trim excess data at the end of the average file
