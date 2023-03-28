@@ -23,6 +23,9 @@ def dill_save(obj, name, folder="pc"):
         remove(full_path)
 
     with open(join(folder, name), "wb") as f:
-        dill.dump(obj, f, recurse=True)
+        """
+        KG: I have added the byref option here, as otherwise `isinstance(sim, pc.sim.__Simulation__)` fails when the sim is loaded again. This causes problems in, e.g., sim.get_ts() . I could not figure out a better way to work around this issue. Ideally, we would remove all uses of isinstance(sim, __Simulation__), and instead use duck-typing.
+        """
+        dill.dump(obj, f, byref=True)
 
     return True
