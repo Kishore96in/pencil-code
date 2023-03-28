@@ -17,7 +17,7 @@ def get(path=".", quiet=False):
     from os.path import isdir, join, exists, basename, abspath
 
     from pencil.io import load
-    from pencil.sim.simulation import simulation
+    from pencil.sim import simulation, __Simulation__
     from pencil import is_sim_dir
 
     if exists(join(path, "pc/sim.dill")):
@@ -28,6 +28,8 @@ def get(path=".", quiet=False):
             if sim.path != abspath(path):
                 # The name of the directory containing the simulation has somehow changed (maybe the user renamed it). Better to just try to reload the sim from scratch.
                 raise RuntimeError
+
+            assert isinstance(sim, __Simulation__) #This is assumed by a lot of functions (e.g. pc.read.ts), but is not guaranteed when serializing using dill.
 
             return sim
         except:
