@@ -110,10 +110,10 @@ module Special
     real, dimension(3), intent(in) :: kvec
     real, dimension(3) :: filt
     
-    real :: k, kdota
+    real :: k2, kdota
     integer :: i
     
-    k = sqrt(kvec(1)**2 + kvec(2)**2 + kvec(3)**2)
+    k2 = kvec(1)**2 + kvec(2)**2 + kvec(3)**2
     
     kdota = 0
     do i=1,3
@@ -122,7 +122,7 @@ module Special
     
     filt = 0
     do i=1,3
-      filt(i) = filt(i) - kvec(i)*kdota/k**2
+        filt(i) = a(i) - kvec(i)*kdota/k2
     enddo
     
   endfunction filter_comp
