@@ -131,15 +131,14 @@ module Special
 !
 !  Modify the f and df after df is updated.
 !
-    use Fourier, only: fft_xyz_parallel, kx_fft2, ky_fft2, kz_fft2, kx_fft, ky_fft, kz_fft
+    use Fourier, only: fft_xyz_parallel, kx_fft, ky_fft, kz_fft
     
     logical, intent(in) :: llast
     real, dimension(mx,my,mz,mfarray), intent(inout) :: f
     real, dimension(mx,my,mz,mvar), intent(inout) :: df
     real, intent(in) :: dt_
     
-    integer :: ikx,iky,ikz,i
-    real :: k
+    integer :: ikx,iky,ikz
     real, dimension(3) :: kvec
     
     jxb_re = f(l1:l2,m1:m2,n1:n2,ijxb:ijxb+2)
