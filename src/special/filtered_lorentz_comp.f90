@@ -122,7 +122,11 @@ module Special
     
     filt = 0
     do i=1,3
+      if (k2/=0) then
         filt(i) = a(i) - kvec(i)*kdota/k2
+      else
+        filt(i) = a(i)
+      endif
     enddo
     
   endfunction filter_comp
