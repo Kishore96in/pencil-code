@@ -1,6 +1,9 @@
 ! $Id$
 !
 !  Add Coriolis force in the beta plane approximation to the hydro equation.
+!  This assumes the expansion is being done about the equator.
+!  The x-axis is in the direction of increasing colatitude, while the
+!  z-axis is the radial direction.
 !
 !  31-Oct-2023: Kishore G. Added.
 !
