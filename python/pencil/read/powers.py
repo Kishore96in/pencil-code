@@ -246,7 +246,7 @@ class Power(object):
 
             linelen = None
             for line_idx, line in enumerate(f):
-                if np.mod(line_idx, block_size) == 0:
+                if line_idx % block_size == 0:
                     time.append(float(line.strip()))
                 else:
                     if linelen is None:
