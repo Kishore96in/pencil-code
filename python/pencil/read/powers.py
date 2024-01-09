@@ -357,3 +357,26 @@ class Power(object):
         )
         self.t = time.astype(np.float32)
         setattr(self, power_name, power_array)
+
+    def _get_nk_xyz(self, dim, grid):
+        """
+        See variable nk_xyz in power_spectrum.f90.
+
+        NOTE: If you want to read output from non-cubic-box simulations run using older versions of Pencil where the number of k-vectors was always taken as nxgrid/2, you can do
+        ```
+        >>> class Power_wrong(pc.read.powers.Power):
+        ...     def _get_nk_xyz(self, dim, grid):
+        ...         return int(dim.nxgrid/2)
+
+        >>> p = Power_wrong.read()
+        ```
+        """
+        if grid is None:
+            return int(dim.nxgrid/2)
+        else:
+            Lx = grid.Lx
+            Ly = grid.Ly
+            Lz = grid.Lz
+
+            L_min = min(Lx, Ly, Lz)
+            return int(np.round(min( dim.nxgrid*L_min/(2*Lx), dim.nygrid*L_min/(2*Ly), dim.nzgrid*L_min/(2*Lz) )))
