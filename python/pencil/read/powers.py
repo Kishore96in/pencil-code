@@ -338,8 +338,10 @@ class Power(object):
         Handles output of power subroutine.
         """
         dim = read.dim(datadir=datadir)
+        grid = self._get_grid(datadir=datadir)
 
-        block_size = np.ceil(int(dim.nxgrid / 2) / 8.0) + 1
+        nk = self._get_nk_xyz(dim, grid)
+        block_size = np.ceil(nk/8) + 1
 
         time = []
         power_array = []
@@ -355,7 +357,7 @@ class Power(object):
         time = np.array(time)
         power_array = (
             np.array(power_array)
-            .reshape([len(time), int(dim.nxgrid / 2)])
+            .reshape([len(time), nk])
             .astype(np.float32)
         )
         self.t = time.astype(np.float32)
