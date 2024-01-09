@@ -159,7 +159,7 @@ class Power(object):
                 or file_name == "powerux_x.dat"
                 or file_name == "poweruy_x.dat"
                 ):
-                self._read_power_x(power_name, file_name, datadir)
+                self._read_power_1d(power_name, file_name, datadir)
             elif file_name == "power_krms.dat":
                 self._read_power_krms(power_name, file_name, datadir)
             else:
@@ -278,7 +278,7 @@ class Power(object):
         self.nzpos = nzpos
         setattr(self, power_name, power_array)
 
-    def _read_power_x(self, power_name, file_name, datadir):
+    def _read_power_1d(self, power_name, file_name, datadir):
         """
         Handle output of subroutine power_1d
         """
