@@ -316,8 +316,10 @@ class Power(object):
         Read power_krms.dat.
         """
         dim = read.dim(datadir=datadir)
+        grid = self._get_grid(datadir=datadir)
 
-        block_size = np.ceil(int(dim.nxgrid / 2) / 8.0) + 1
+        nk = self._get_nk_xyz(dim, grid)
+        block_size = np.ceil(nk/8) + 1
 
         power_array = []
         with open(os.path.join(datadir, file_name), "r") as f:
@@ -327,7 +329,7 @@ class Power(object):
                     for value_string in line.strip().split():
                         power_array.append(float(value_string))
         power_array = (
-            np.array(power_array).reshape([int(dim.nxgrid / 2)]).astype(np.float32)
+            np.array(power_array).reshape([nk]).astype(np.float32)
         )
         setattr(self, power_name, power_array)
 
