@@ -11,6 +11,7 @@ import numpy as np
 from pencil import read
 from pencil.util import ffloat
 import re
+import warnings
 
 def power(*args, **kwargs):
     """
@@ -380,3 +381,11 @@ class Power(object):
 
             L_min = min(Lx, Ly, Lz)
             return int(np.round(min( dim.nxgrid*L_min/(2*Lx), dim.nygrid*L_min/(2*Ly), dim.nzgrid*L_min/(2*Lz) )))
+
+    def _get_grid(self, datadir):
+        try:
+            return read.grid(datadir=datadir, quiet=True)
+        except FileNotFoundError:
+            # KG: Handling this case because there is no grid.dat in `tests/input/serial-1/proc0` and we don't want the test to fail. Should we just drop this and add a grid.dat in the test input?
+            warnings.warn("grid.dat not found. Assuming the box is cubical.")
+            return None
