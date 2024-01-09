@@ -278,7 +278,7 @@ class Power(object):
 
     def _read_power_x(self, power_name, file_name, datadir):
         """
-        Handles files like "poweruz_x.dat"
+        Handle output of subroutine power_1d
         """
         dim = read.dim(datadir=datadir)
 
