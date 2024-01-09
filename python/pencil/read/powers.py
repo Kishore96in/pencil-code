@@ -244,11 +244,14 @@ class Power(object):
             else:
                 block_size = np.ceil(int(nk * nzpos) / 8) + 1
 
+            linelen = None
             for line_idx, line in enumerate(f):
                 if np.mod(line_idx, block_size) == 0:
                     time.append(float(line.strip()))
                 else:
-                    linelen = len(line.strip().split())
+                    if linelen is None:
+                        linelen = len(line.strip().split())
+
                     if linelen == 8:
                         # real power spectrum
                         for value_string in line.strip().split():
