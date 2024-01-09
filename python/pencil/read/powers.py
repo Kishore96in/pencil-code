@@ -268,6 +268,8 @@ class Power(object):
             power_array = np.array(power_array, dtype=np.float32)
         elif linelen == 16:
             power_array = np.array(power_array, dtype=complex)
+        else:
+            raise NotImplementedError(f"Unsupported line length ({linelen})")
 
         if param.lintegrate_shell or (dim.nxgrid == 1 or dim.nygrid == 1):
             power_array = power_array.reshape([len(time), nzpos, nk])
