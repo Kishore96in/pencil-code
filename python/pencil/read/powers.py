@@ -12,6 +12,7 @@ from pencil import read
 from pencil.util import ffloat
 import re
 import warnings
+import functools
 
 def power(*args, **kwargs):
     """
@@ -315,10 +316,7 @@ class Power(object):
         """
         Read power_krms.dat.
         """
-        dim = read.dim(datadir=datadir)
-        grid = self._get_grid(datadir=datadir)
-
-        nk = self._get_nk_xyz(dim, grid)
+        nk = self._get_nk_xyz(datadir)
         block_size = np.ceil(nk/8) + 1
 
         power_array = []
@@ -337,10 +335,7 @@ class Power(object):
         """
         Handles output of power subroutine.
         """
-        dim = read.dim(datadir=datadir)
-        grid = self._get_grid(datadir=datadir)
-
-        nk = self._get_nk_xyz(dim, grid)
+        nk = self._get_nk_xyz(datadir)
         block_size = np.ceil(nk/8) + 1
 
         time = []
@@ -363,7 +358,8 @@ class Power(object):
         self.t = time.astype(np.float32)
         setattr(self, power_name, power_array)
 
-    def _get_nk_xyz(self, dim, grid):
+    @functools.lru_cache
+    def _get_nk_xyz(self, datadir):
         """
         See variable nk_xyz in power_spectrum.f90.
 
@@ -376,20 +372,17 @@ class Power(object):
         >>> p = Power_wrong.read()
         ```
         """
-        if grid is None:
-            return int(dim.nxgrid/2)
-        else:
-            Lx = grid.Lx
-            Ly = grid.Ly
-            Lz = grid.Lz
-
-            L_min = min(Lx, Ly, Lz)
-            return int(np.round(min( dim.nxgrid*L_min/(2*Lx), dim.nygrid*L_min/(2*Ly), dim.nzgrid*L_min/(2*Lz) )))
-
-    def _get_grid(self, datadir):
+        dim = read.dim(datadir=datadir)
         try:
-            return read.grid(datadir=datadir, quiet=True)
+            grid = read.grid(datadir=datadir, quiet=True)
         except FileNotFoundError:
             # KG: Handling this case because there is no grid.dat in `tests/input/serial-1/proc0` and we don't want the test to fail. Should we just drop this and add a grid.dat in the test input?
             warnings.warn("grid.dat not found. Assuming the box is cubical.")
-            return None
+            return int(dim.nxgrid/2)
+
+        Lx = grid.Lx
+        Ly = grid.Ly
+        Lz = grid.Lz
+
+        L_min = min(Lx, Ly, Lz)
+        return int(np.round(min( dim.nxgrid*L_min/(2*Lx), dim.nygrid*L_min/(2*Ly), dim.nzgrid*L_min/(2*Lz) )))
