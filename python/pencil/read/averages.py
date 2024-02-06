@@ -530,9 +530,6 @@ class Averages(object):
             if "time" in var_names:
                 var_names.remove('time')
 
-            class _Plane(object):
-                pass
-
             # This one will store the data.
             ext_object = getattr(self, plane, _Plane())
             if comp_time:
