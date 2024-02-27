@@ -6469,7 +6469,7 @@ module Boundcond
         call get_shared_variable('chi',chi)
       endif
 !
-      if (lheatc_kramers.or.lreference_state) then
+      if (lheatc_kramers.or.lheatc_chiconst.or.lreference_state) then
         allocate(work_yz(size(f,2),size(f,3)),stat=stat)
         if (stat>0) call fatal_error('bc_ss_flux_x', &
                                      'Could not allocate memory for work_yz')
