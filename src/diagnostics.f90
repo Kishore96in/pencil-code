@@ -178,6 +178,9 @@ module Diagnostics
 !
       if (lproper_averages) then
         dVol_rel1=1./box_volume
+        dA_xy_rel1 = 1./Area_xy
+        dA_yz_rel1 = 1./Area_yz
+        dA_xz_rel1 = 1./Area_xz
       elseif (lspherical_coords) then
 !
 !  Prevent zeros from less than 3-dimensional runs
@@ -2262,7 +2265,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call xysum_mn_name_z_npar(a,n,iname)
+      if (lproper_averages) then
+        call xyintegrate_mn_name_z(a,iname)
+      else
+        call xysum_mn_name_z_npar(a,n,iname)
+      endif
 
     endsubroutine xysum_mn_name_z
 !***********************************************************************
@@ -2315,7 +2322,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call xzsum_mn_name_y_mpar(a,m,iname)
+      if (lproper_averages) then
+        call xzintegrate_mn_name_y(a,iname)
+      else
+        call xzsum_mn_name_y_mpar(a,m,iname)
+      endif
 
     endsubroutine xzsum_mn_name_y
 !***********************************************************************
@@ -2368,7 +2379,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call yzsum_mn_name_x_mpar(a,m,iname)
+      if (lproper_averages) then
+        call yzintegrate_mn_name_x(a,iname)
+      else
+        call yzsum_mn_name_x_mpar(a,m,iname)
+      endif
 
     endsubroutine yzsum_mn_name_x
 !***********************************************************************
@@ -2416,7 +2431,7 @@ module Diagnostics
 !
 !   18-jun-07/tobi: adapted from xysum_mn_name_z
 !
-      real, dimension (nx) :: a
+      real, dimension (nx) :: a, tmp
       integer :: iname
       real :: fac,suma
       integer :: nl
@@ -2434,10 +2449,16 @@ module Diagnostics
         if ((m==m1.and.lfirst_proc_y).or.(m==m2.and.llast_proc_y)) fac = .5
       endif
 !
-      if (lperi(1)) then
-        suma = fac*sum(a)
+      if (lproper_averages) then
+        tmp = a*dAxy_x(l1:l2)*dAxy_y(m)
       else
-        suma = fac*(sum(a(2:nx-1))+.5*(a(1)+a(nx)))
+        tmp  = a
+      endif
+!
+      if (lperi(1)) then
+        suma = fac*sum(tmp)
+      else
+        suma = fac*(sum(tmp(2:nx-1))+.5*(tmp(1)+tmp(nx)))
       endif
 !
 !  n starts with nghost=4, so the correct index is n-nghost.
@@ -2454,7 +2475,7 @@ module Diagnostics
 !
 !   18-jun-07/tobi: adapted from xzsum_mn_name_y
 !
-      real, dimension (nx) :: a
+      real, dimension (nx) :: a, tmp
       integer :: iname
       real :: fac,suma
 !
@@ -2471,10 +2492,16 @@ module Diagnostics
         if ((n==n1.and.lfirst_proc_z).or.(n==n2.and.llast_proc_z)) fac = .5
       endif
 !
-      if (lperi(1)) then
-        suma = fac*sum(a)
+      if (lproper_averages) then
+        tmp = a*dAxz_x(l1:l2)*dAxz_z(n)
       else
-        suma = fac*(sum(a(2:nx-1))+.5*(a(1)+a(nx)))
+        tmp  = a
+      endif
+!
+      if (lperi(1)) then
+        suma = fac*sum(tmp)
+      else
+        suma = fac*(sum(tmp(2:nx-1))+.5*(tmp(1)+tmp(nx)))
       endif
 !
 !  m starts with mghost+1=4, so the correct index is m-nghost.
@@ -2490,7 +2517,7 @@ module Diagnostics
 !
 !   18-jun-07/tobi: adapted from yzsum_mn_name_x
 !
-      real, dimension (nx) :: a
+      real, dimension (nx) :: a, tmp
       integer :: iname
       real :: fac
 !
@@ -2510,7 +2537,14 @@ module Diagnostics
         if ((n==n1.and.lfirst_proc_z).or.(n==n2.and.llast_proc_z)) fac = .5*fac
       endif
 !
-      fnamex(:,ipx+1,iname) = fnamex(:,ipx+1,iname) + fac*a
+!
+      if (lproper_averages) then
+        tmp = a*dAyz_y(m)*dAyz_z(n)
+      else
+        tmp  = a
+      endif
+!
+      fnamex(:,ipx+1,iname) = fnamex(:,ipx+1,iname) + fac*tmp
 !
     endsubroutine yzintegrate_mn_name_x
 !***********************************************************************
