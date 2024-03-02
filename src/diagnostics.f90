@@ -176,7 +176,12 @@ module Diagnostics
 !
 !  Calculate relative volume integral.
 !
-      if (lspherical_coords) then
+      if (lproper_averages) then
+        dVol_rel1=1./box_volume
+        dA_xy_rel1 = 1./Area_xy
+        dA_yz_rel1 = 1./Area_yz
+        dA_xz_rel1 = 1./Area_xz
+      elseif (lspherical_coords) then
 !
 !  Prevent zeros from less than 3-dimensional runs
 !  (maybe this should be 2pi, but maybe not).
@@ -238,10 +243,6 @@ module Diagnostics
         dA_xy_rel1 = 1./nxygrid
         dA_xz_rel1 = 1./nxzgrid
         dA_yz_rel1 = 1./nyzgrid
-      endif
-!
-      if (lproper_averages) then
-        dVol_rel1=1./box_volume
       endif
 !
       if (lroot.and.ip<=10) then
@@ -2264,7 +2265,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call xysum_mn_name_z_npar(a,n,iname)
+      if (lproper_averages) then
+        call xyintegrate_mn_name_z(a,iname)
+      else
+        call xysum_mn_name_z_npar(a,n,iname)
+      endif
 
     endsubroutine xysum_mn_name_z
 !***********************************************************************
@@ -2317,7 +2322,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call xzsum_mn_name_y_mpar(a,m,iname)
+      if (lproper_averages) then
+        call xzintegrate_mn_name_y(a,iname)
+      else
+        call xzsum_mn_name_y_mpar(a,m,iname)
+      endif
 
     endsubroutine xzsum_mn_name_y
 !***********************************************************************
@@ -2370,7 +2379,11 @@ module Diagnostics
       real, dimension(nx), intent(IN) :: a
       integer,             intent(IN) :: iname
 
-      call yzsum_mn_name_x_mpar(a,m,iname)
+      if (lproper_averages) then
+        call yzintegrate_mn_name_x(a,iname)
+      else
+        call yzsum_mn_name_x_mpar(a,m,iname)
+      endif
 
     endsubroutine yzsum_mn_name_x
 !***********************************************************************
