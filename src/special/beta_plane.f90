@@ -1,10 +1,8 @@
 ! $Id$
 !
 !  Add Coriolis force in the beta plane approximation to the hydro equation.
-!  This assumes the expansion is being done about the equator.
 !  The x-axis is in the direction of increasing colatitude, while the
 !  z-axis is the radial direction.
-!  TODO: probably should check that gravity is in the -z direction and we are in Cartesian coordinates.
 !
 !  31-Oct-2023: Kishore G. Added.
 !
@@ -31,13 +29,39 @@ module Special
   include '../special.h'
 !
 ! NOTE: Omega is already defined in cdata.f90
+! TODO: unclear if the use of Omega is a good idea here. What other parts of the code assume that Omega/=0 means the f-plane approximation?
   real :: R = 1 !Radius of the sphere
+  real :: theta_0 = pi/2 !Colatitude about which the Coriolis force is linearized
+  real :: cth = impossible, sth = impossible, Rinv=impossible
 !
 ! run parameters
   namelist /special_run_pars/ &
-    Omega, R
+    Omega, R, theta_0
 !
   contains
+!***********************************************************************
+    subroutine initialize_special(f)
+!
+      real, dimension (mx,my,mz,mfarray) :: f
+!
+      call keep_compiler_quiet(f)
+!
+      cth = cos(theta_0)
+      sth = sin(theta_0)
+!
+      if (.not.lcartesian_coords) call fatal_error("initialize_special", &
+        "Cartesian coordinates required for beta-plane approximation")
+      if (lgrav.and..not.lgravz) call fatal_error("initialize_special", &
+        "Gravity needs to be in the z direction")
+!
+      if (R>0) then
+        Rinv = 1/R
+      else
+        !We allow the user to set R<0 to obtain the f-plane approximation.
+        Rinv = 0
+      endif
+!
+    endsubroutine initialize_special
 !***********************************************************************
     subroutine pencil_criteria_special
 !
@@ -71,12 +95,15 @@ module Special
 !
       call keep_compiler_quiet(f)
 !
-      df(l1:l2,m,n,iux) = df(l1:l2,m,n,iux) + 2*Omega*x(l1:l2)*p%uu(:,2)/R
+      df(l1:l2,m,n,iux) = df(l1:l2,m,n,iux) &
+                          - 2*Omega*(cth - sth*x(l1:l2)*Rinv )*p%uu(:,2)
 !
-      df(l1:l2,m,n,iuy) = df(l1:l2,m,n,iuy) + 2*Omega*p%uu(:,3) &
-                          - 2*Omega*x(l1:l2)*p%uu(:,1)/R
+      df(l1:l2,m,n,iuy) = df(l1:l2,m,n,iuy) &
+                          + 2*Omega*(sth + cth*x(l1:l2)*Rinv)*p%uu(:,3) &
+                          + 2*Omega*(cth - sth*x(l1:l2)*Rinv)*p%uu(:,1)
 !
-      df(l1:l2,m,n,iuz) = df(l1:l2,m,n,iuz) - 2*Omega*p%uu(:,2)
+      df(l1:l2,m,n,iuz) = df(l1:l2,m,n,iuz) &
+                          - 2*Omega*(sth + cth*x(l1:l2)*Rinv)*p%uu(:,2)
 !
     endsubroutine special_calc_hydro
 !***********************************************************************
