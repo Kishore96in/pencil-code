@@ -1,7 +1,6 @@
 ! $Id$
 !
 !  Add Coriolis force in the beta plane approximation to the hydro equation.
-!  This assumes the expansion is being done about the equator.
 !  The x-axis is in the direction of increasing colatitude, while the
 !  z-axis is the radial direction.
 !  TODO: probably should check that gravity is in the -z direction and we are in Cartesian coordinates.
@@ -32,12 +31,30 @@ module Special
 !
 ! NOTE: Omega is already defined in cdata.f90
   real :: R = 1 !Radius of the sphere
+  real :: theta_0 = pi/2 !Colatitude about which the Coriolis force is linearized
+  real :: cth = impossible, sth = impossible
 !
 ! run parameters
   namelist /special_run_pars/ &
-    Omega, R
+    Omega, R, theta_0
 !
   contains
+!***********************************************************************
+    subroutine initialize_special(f)
+!
+      real, dimension (mx,my,mz,mfarray) :: f
+!
+      call keep_compiler_quiet(f)
+!
+      cth = cos(theta_0)
+      sth = sin(theta_0)
+!
+      if (.not.lcartesian_coords) call fatal_error("initialize_special", &
+        "Cartesian coordinates required for beta-plane approximation")
+      if (lgrav.and..not.lgravz) call fatal_error("initialize_special", &
+        "Gravity needs to be in the z direction")
+!
+    endsubroutine initialize_special
 !***********************************************************************
     subroutine pencil_criteria_special
 !
@@ -71,12 +88,15 @@ module Special
 !
       call keep_compiler_quiet(f)
 !
-      df(l1:l2,m,n,iux) = df(l1:l2,m,n,iux) + 2*Omega*x(l1:l2)*p%uu(:,2)/R
+      df(l1:l2,m,n,iux) = df(l1:l2,m,n,iux) &
+                          - 2*Omega*(cth - sth*x(l1:l2)/R )*p%uu(:,2)
 !
-      df(l1:l2,m,n,iuy) = df(l1:l2,m,n,iuy) + 2*Omega*p%uu(:,3) &
-                          - 2*Omega*x(l1:l2)*p%uu(:,1)/R
+      df(l1:l2,m,n,iuy) = df(l1:l2,m,n,iuy) &
+                          + 2*Omega*(sth + cth*x(l1:l2)/R)*p%uu(:,3) &
+                          + 2*Omega*(cth - sth*x(l1:l2)/R)*p%uu(:,1)
 !
-      df(l1:l2,m,n,iuz) = df(l1:l2,m,n,iuz) - 2*Omega*p%uu(:,2)
+      df(l1:l2,m,n,iuz) = df(l1:l2,m,n,iuz) &
+                          - 2*Omega*(sth + cth*x(l1:l2)/R)*p%uu(:,2)
 !
     endsubroutine special_calc_hydro
 !***********************************************************************
