@@ -30,6 +30,7 @@ module Special
   include '../special.h'
 !
 ! NOTE: Omega is already defined in cdata.f90
+! TODO: unclear if the use of Omega is a good idea here. What other parts of the code assume that Omega/=0 means the f-plane approximation?
   real :: R = 1 !Radius of the sphere
   real :: theta_0 = pi/2 !Colatitude about which the Coriolis force is linearized
   real :: cth = impossible, sth = impossible
