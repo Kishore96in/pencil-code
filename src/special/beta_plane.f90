@@ -3,6 +3,7 @@
 !  Add Coriolis force in the beta plane approximation to the hydro equation.
 !  The x-axis is in the direction of increasing colatitude, while the
 !  z-axis is the radial direction.
+!  TODO: as a special case, R<0 should revert to the f-plane approximation.
 !
 !  31-Oct-2023: Kishore G. Added.
 !
