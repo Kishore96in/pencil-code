@@ -290,9 +290,9 @@ class DataCube(object):
         else:
             datadir = os.path.expanduser(sim.datadir)
             dim = sim.dim
-            param = read.param(datadir=sim.datadir, quiet=True, conflicts_quiet=True)
-            index = read.index(datadir=sim.datadir)
-            grid = sim.grid
+            param = read.param(datadir=datadir, quiet=True, conflicts_quiet=True)
+            index = read.index(datadir=datadir)
+            grid = read.grid(datadir=datadir, quiet=True) # we can't use sim.grid because we want the untrimmed one
 
         if var_file[0:2].lower() == "og":
             dim = read.ogdim(datadir, proc)
