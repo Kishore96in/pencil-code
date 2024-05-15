@@ -20,7 +20,7 @@
 module Special
 !
   use Cparam
-  use Cdata
+  use Cdata, Omega_fplane => Omega
   use General, only: keep_compiler_quiet
   use Messages, only: svn_id, fatal_error
 !
@@ -28,8 +28,7 @@ module Special
 !
   include '../special.h'
 !
-! NOTE: Omega is already defined in cdata.f90
-! TODO: unclear if the use of Omega is a good idea here. What other parts of the code assume that Omega/=0 means the f-plane approximation?
+  real :: Omega = 0 !rotational rate
   real :: R = 1 !Radius of the sphere
   real :: theta_0 = pi/2 !Colatitude about which the Coriolis force is linearized
   real :: cth = impossible, sth = impossible, Rinv=impossible
@@ -53,6 +52,8 @@ module Special
         "Cartesian coordinates required for beta-plane approximation")
       if (lgrav.and..not.lgravz) call fatal_error("initialize_special", &
         "Gravity needs to be in the z direction")
+      if (Omega_fplane /= 0) call fatal_error("initialize_special", &
+        "Do not set Omega in hydro_run_pars")
 !
       if (R>0) then
         Rinv = 1/R
