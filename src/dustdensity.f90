@@ -488,17 +488,17 @@ module Dustdensity
       enddo
 !
       if ((ldiffd_simplified .or. ldiffd_dusttogasratio) .and. diffnd==0.0) then
-        call warning('initialize_dustdensity','dust diffusion coefficient diffnd is zero!')
+        call warning('initialize_dustdensity','dust diffusion coefficient diffnd is zero')
         ldiffd_simplified=.false.
         ldiffd_dusttogasratio=.false.
       endif
       if ( (ldiffd_hyper3.or.ldiffd_hyper3lnnd) .and. diffnd_hyper3==0.0) then
-        call warning('initialize_dustdensity','dust diffusion coefficient diffnd_hyper3 is zero!')
+        call warning('initialize_dustdensity','dust diffusion coefficient diffnd_hyper3 is zero')
         ldiffd_hyper3=.false.
         ldiffd_hyper3lnnd=.false.
       endif
       if ( ldiffd_shock .and. diffnd_shock==0.0) then
-        call warning('initialize_dustdensity','dust diffusion coefficient diffnd_shock is zero!')
+        call warning('initialize_dustdensity','dust diffusion coefficient diffnd_shock is zero')
         ldiffd_shock=.false.
       endif
 !
@@ -677,9 +677,8 @@ module Dustdensity
           rho00  = 1.0
           rhod00 = eps_dtog*Hrho/Hnd*rho00
           do n=n1,n2
-            lnrho_z = alog( &
-                      rhod00*Hnd**2/(Hrho**2-Hnd**2)*exp(-z(n)**2/(2*Hnd**2)) + &
-                      (rho00-rhod00*Hnd**2/(Hrho**2-Hnd**2))*exp(-z(n)**2/(2*Hrho**2)) )
+            lnrho_z = alog( rhod00*Hnd**2/(Hrho**2-Hnd**2)*exp(-z(n)**2/(2*Hnd**2)) + &
+                            (rho00-rhod00*Hnd**2/(Hrho**2-Hnd**2))*exp(-z(n)**2/(2*Hrho**2)) )
             if (ldensity_nolog) then
               f(:,:,n,irho)   = exp(lnrho_z)
             else
@@ -2328,41 +2327,54 @@ module Dustdensity
 !
         if (lradius_binning) then
 !
+!  In the free molecule regime, there is no 1/r in the condensation.
+!  For k=1, nothing needs to be done, unless we want to introduce damping.
+!  This part is used for microsilica modeling.
+!
+          if (lfree_molecule) then
+            do k=2,ndustspec-1
+              coefkm=mfluxcondm/(ad(k+1)-ad(k))
+              df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
+                -coefk0*(f(l1:l2,m,n,ind(k))-f(l1:l2,m,n,ind(k-1)))
+            enddo
+          else
+!
 !  Alternative I (does not work when coagulation is also used).
 !  Start with the first mass bin...
 !
-          k=1
-          mfluxcondp=(abs(mfluxcond)-mfluxcond)
-          mfluxcondm=(abs(mfluxcond)+mfluxcond)
-          coefkp=.5*mfluxcondp/(ad(k+1)-ad(k))
-          coefk0=  -mfluxcondm/ ad(k)-coefkp
-          df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
-                                +coefkp*f(l1:l2,m,n,ind(k+1))/ad(k+1) &
-                                +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
+            k=1
+            mfluxcondp=(abs(mfluxcond)-mfluxcond)
+            mfluxcondm=(abs(mfluxcond)+mfluxcond)
+            coefkp=.5*mfluxcondp/(ad(k+1)-ad(k))
+            coefk0=  -mfluxcondm/ ad(k)-coefkp
+            df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
+                                  +coefkp*f(l1:l2,m,n,ind(k+1))/ad(k+1) &
+                                  +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
 !
 !  Finish with the last mass bin...
 !
-          k=ndustspec
-          mfluxcondm=(abs(mfluxcond)+mfluxcond)
-          coefkm=.5*mfluxcondm/(ad(k)-ad(k-1))
-          coefk0=  -mfluxcondp/ ad(k)-coefkm
-          df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
-                                +coefkm*f(l1:l2,m,n,ind(k-1))/ad(k-1) &
-                                +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
+            k=ndustspec
+            mfluxcondm=(abs(mfluxcond)+mfluxcond)
+            coefkm=.5*mfluxcondm/(ad(k)-ad(k-1))
+            coefk0=  -mfluxcondp/ ad(k)-coefkm
+            df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
+                                  +coefkm*f(l1:l2,m,n,ind(k-1))/ad(k-1) &
+                                  +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
 !
 !  ... then loop over mass bins
 !
-          do k=2,ndustspec-1
-            mfluxcondp=(abs(mfluxcond)-mfluxcond)
-            mfluxcondm=(abs(mfluxcond)+mfluxcond)
-            coefkp=+.5*mfluxcondp/(ad(k+1)-ad(k))
-            coefkm=+.5*mfluxcondm/(ad(k)-ad(k-1))
-            coefk0=-(coefkp+coefkm)
-            df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
-                                  +coefkp*f(l1:l2,m,n,ind(k+1))/ad(k+1) &
-                                  +coefkm*f(l1:l2,m,n,ind(k-1))/ad(k-1) &
-                                  +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
-          enddo
+            do k=2,ndustspec-1
+              mfluxcondp=(abs(mfluxcond)-mfluxcond)
+              mfluxcondm=(abs(mfluxcond)+mfluxcond)
+              coefkp=+.5*mfluxcondp/(ad(k+1)-ad(k))
+              coefkm=+.5*mfluxcondm/(ad(k)-ad(k-1))
+              coefk0=-(coefkp+coefkm)
+              df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
+                                    +coefkp*f(l1:l2,m,n,ind(k+1))/ad(k+1) &
+                                    +coefkm*f(l1:l2,m,n,ind(k-1))/ad(k-1) &
+                                    +coefk0*f(l1:l2,m,n,ind(k))  /ad(k)
+            enddo
+          endif
 !
 !  same but for mass bins
 !
@@ -2370,10 +2382,11 @@ module Dustdensity
 !
 !  in the free molecule regime, there is no 1/r in the condensation.
 !  For k=1, nothing needs to be done, unless we want to introduce damping.
+!  This part is used for microsilica modeling.
 !
           if (lfree_molecule) then
             do k=2,ndustspec-1
-              coefk0=3.*mfluxcond/ad(k)
+              coefk0=3.*mfluxcond/(ad(k)*dlnmd)
               df(l1:l2,m,n,ind(k)) = df(l1:l2,m,n,ind(k)) &
                 -coefk0*(f(l1:l2,m,n,ind(k))-f(l1:l2,m,n,ind(k-1)))
             enddo
@@ -2558,7 +2571,7 @@ module Dustdensity
         mfluxcond=GS_condensparam
 
       case default
-        call fatal_error('get_mfluxcond','no valid dust chemistry specified')
+        call fatal_error('get_mfluxcond','no such dust_chemistry: '//trim(dust_chemistry))
       endselect
 !
     endsubroutine get_mfluxcond

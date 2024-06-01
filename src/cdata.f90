@@ -35,6 +35,7 @@ module Cdata
   real, dimension (nx) :: dxyz_2, dxyz_4, dxyz_6, dVol
   real, dimension (nx) :: dxmax_pencil,dxmin_pencil
 !BEGIN C BINDING
+  real :: dVol_glob
   real, dimension (mx) :: x,dx_1,dx2,dx_tilde,xprim,dVol_x,dVol1_x
   real, dimension (mx) :: dAxy_x, dAxz_x
   real, dimension (my) :: y,dy_1,dy2,dy_tilde,yprim,dVol_y,dVol1_y
@@ -118,7 +119,7 @@ module Cdata
                            lshift_origin=.false., lshift_origin_lower=.false., & ! don't shift origin
                            lpole=.false., &                                      ! in spherical coords: pole excluded
                            lequidist=.true.                                      ! grid equidistant in every direction
-  logical :: lignore_nonequi=.false.
+  logical :: lignore_nonequi=.false., lcart_equi=.true.
   character (len=labellen), dimension(3) :: grid_func='linear'
   character (len=labellen) :: pipe_func='error_function'
   integer :: nghost_read_fewer=0
@@ -349,6 +350,10 @@ module Cdata
   integer :: iuust=0,iuxst=0,iuyst=0,iuzst=0,ioost=0,ioxst=0,ioyst=0,iozst=0
   integer :: ibbt=0,ibxt=0,ibyt=0,ibzt=0,ijjt=0,ijxt=0,ijyt=0,ijzt=0, &
              ijxb=0, ijxbx=0, ijxby=0, ijxbz=0
+  integer :: iuxb=0,iuxbx=0,iuxby=0,iuxbz=0
+  integer :: iugb=0,iugbx=0,iugby=0,iugbz=0
+  integer :: ibgu=0,ibgux=0,ibguy=0,ibguz=0
+  integer :: ibdivu=0,ibdivux=0,ibdivuy=0,ibdivuz=0
   integer :: ibxf=0,ibyf=0,ibzf=0,ibbf=0
   integer :: ipotself=0
   integer :: iaa=0,iax=0,iay=0,iaz=0
@@ -809,8 +814,8 @@ module Cdata
 !
 ! threadprivate definitions for OpenMP
 !
-!$omp threadprivate(dxyz_2,dxyz_4,dxyz_6,dvol,dxmax_pencil&
-!$omp ,dxmin_pencil,dline_1,lcoarse_mn, seed, m, n)
+!!$omp threadprivate(dxyz_2,dxyz_4,dxyz_6,dvol,dxmax_pencil,dxmin_pencil,dline_1,lcoarse_mn, seed, m, n)
+!$omp threadprivate(dxyz_2,dxyz_4,dxyz_6,dxmax_pencil,dxmin_pencil,dline_1,lcoarse_mn, seed, m, n)
 !$omp threadprivate(lfirstpoint)
 !$omp threadprivate(fname,fnamex,fnamey,fnamez,fnamer,fnamexy,fnamexz,fnamerz,fname_keep,fname_sound)
 !$omp threadprivate(l1dphiavg, l1davgfirst, l2davgfirst, ldiagnos)

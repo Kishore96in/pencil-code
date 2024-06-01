@@ -3324,7 +3324,7 @@ module Energy
         if (lpressuregradient_gas) then
           if (notanumber(p%fpres)) then
             if (lproc_print) then
-              print*, 'denergy_dt: p%fpres contains a NaN at iproc=', iproc
+              print*, 'denergy_dt: it',it,'t',t,'p%fpres contains a NaN at iproc=', iproc
               if (.not.allproc_print) lproc_print=.false.
             endif
             if (ip<6) print*, 'p%fpres =',p%fpres
@@ -8082,6 +8082,6 @@ module Energy
 !**  copies dummy routines from nospecial.f90 for any Special      **
 !**  routines not implemented in this file                         **
 !**                                                                **
-    include 'energy_common.inc'
+    include 'energy_dummies.inc'
 !***********************************************************************
 endmodule Energy

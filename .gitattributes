@@ -668,6 +668,9 @@ doc/implementation/anelastic/anelastic_hurdle.pdf -text
 doc/implementation/anelastic/anelastic_hurdle.tex -text
 doc/implementation/bound_cond/Makefile -text
 doc/implementation/bound_cond/radiative.tex -text
+doc/implementation/chemistry/Makefile -text
+doc/implementation/chemistry/notes.pdf -text
+doc/implementation/chemistry/notes.tex -text
 doc/implementation/correlation_time_uut/Makefile -text
 doc/implementation/correlation_time_uut/README -text
 doc/implementation/correlation_time_uut/fig/pcortime.eps -text
@@ -4054,7 +4057,6 @@ src/astaroth/forcing.h -text
 src/astaroth/gpu_astaroth.cc -text
 src/astaroth/loadStore.cc -text
 src/astaroth/loadStore.h -text
-src/astaroth_sgl.so -text
 src/bfield.f90 -text
 src/border_profiles.f90 -text
 src/border_profiles.h -text
@@ -4581,7 +4583,6 @@ src/noshear.f90 -text
 src/noshock.f90 -text
 src/nosignal_handling.f90 -text
 src/noslices.f90 -text
-src/noslices_methods.f90 -text
 src/nosolid_cells.f90 -text
 src/nosolid_cells_mpicomm.f90 -text
 src/nosolid_cells_ogrid_cdata.f90 -text
@@ -4729,8 +4730,6 @@ src/read_videofiles.f90 -text
 src/record_types.h -text
 src/register.f90 -text
 src/run.f90 -text
-src/run_dynamic.h -text
-src/run_static.h -text
 src/scripts/adapt-mkfile -text
 src/scripts/boundcond2c -text
 src/scripts/cdata.sed -text
@@ -4772,7 +4771,6 @@ src/shock_highorder.f90 -text
 src/signal_handling.f90 -text
 src/slices.f90 -text
 src/slices_methods.f90 -text
-src/slices_methods.h -text
 src/snapshot.f90 -text
 src/solid_cells.f90 -text
 src/solid_cells.h -text

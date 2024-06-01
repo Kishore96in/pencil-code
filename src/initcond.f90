@@ -47,7 +47,7 @@ module Initcond
   public :: Gaussian_By_z
   public :: wave_uu, wave, parabola, linprof
   public :: sinxsinz, cosx_cosy_cosz, cosx_coscosy_cosz
-  public :: x_siny_cosz, x1_siny_cosz, x1_cosy_cosz, lnx_cosy_cosz
+  public :: x_siny_cosz, x1_siny_cosz, x32_siny_cosz, x1_cosy_cosz, lnx_cosy_cosz
   public :: sinx_siny_sinz, cosx_siny_cosz, sinx_siny_cosz
   public :: sin2x_sin2y_cosz, cos2x_cos2y_cos2z, x3_cosy_cosz, x3_siny_cosz
   public :: cosx_cosz, cosy_cosz, cosy_sinz
@@ -313,6 +313,41 @@ module Initcond
       endif
 !
     endsubroutine x1_siny_cosz
+!***********************************************************************
+    subroutine x32_siny_cosz(ampl,f,i,kx,ky,kz,phasey)
+!
+!  sinusoidal wave, adapted from sinxsinz (that routine was already doing
+!  this, but under a different name)
+!
+!  29-may-24/axel: coded
+!
+      use General, only: roptest
+!
+      integer :: i
+      real, dimension (mx,my,mz,mfarray) :: f
+      real,optional :: kx,ky,kz,phasey
+!
+      real :: ampl,kx1,ky1,kz1,phasey1
+!
+!  wavenumber k, helicity H=ampl (can be either sign)
+!
+!  sinx(kx*x)*sin(kz*z)
+!
+      if (ampl==0) then
+        if (lroot) print*,'x32_siny_cosz: ampl=0'
+      else
+        kx1 = roptest(kx,pi/2.)
+        ky1 = roptest(ky,0.)
+        kz1 = roptest(kz,pi/2.)
+        phasey1 = roptest(phasey,0.)
+
+        if (lroot) write(*,wave_fmt1) 'x32_siny_cosz: ampl,kx,ky,kz=',ampl,kx1,ky1,kz1
+        f(:,:,:,i)=f(:,:,:,i)+ampl*(spread(spread(1./x**3-x**2,2,my),3,mz) &
+                                   *spread(spread(sin(ky1*y+phasey1),1,mx),3,mz) &
+                                   *spread(spread(cos(kz1*z),1,mx),2,my))
+      endif
+!
+    endsubroutine x32_siny_cosz
 !***********************************************************************
     subroutine x1_cosy_cosz(ampl,f,i,kx,ky,kz)
 !
