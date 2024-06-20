@@ -5131,6 +5131,7 @@ module Energy
 !
 !  23-feb-11/pete: coded
 !  24-aug-15/MR: bounds for chi introduced
+!  20-jun-2024/KG: fix implementation of the chi bounds
 !
       use Diagnostics
       use Sub, only: dot
@@ -5157,7 +5158,10 @@ module Energy
       K_kramers = hcond0_kramers*p%rho1**(2.*nkramers)*p%TT**(6.5*nkramers)
       Krho1 = K_kramers*p%rho1   ! = K/rho
 !
-      !g2 is grad(ln(K) + ln(T)).grad(ln(T))
+!  g2 is grad(ln(K) + ln(T)).grad(ln(T))
+!  We are not accounting for the gradient of cp, so the below will
+!  be wrong if you use eos_ionization or eos_idealgas_vapor
+!
       call dot(-2.*nkramers*p%glnrho+(6.5*nkramers+1)*p%glnTT,p%glnTT,g2)
       call dot(-p%glnrho+p%glnTT, p%glnTT, g2_chi)
 !
