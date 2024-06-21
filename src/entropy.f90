@@ -1310,6 +1310,8 @@ module Energy
       if (lheatc_kramers) then
         call put_shared_variable('hcond0_kramers',hcond0_kramers)
         call put_shared_variable('nkramers',nkramers)
+        call put_shared_variable('chimax_kramers',chimax_kramers)
+        call put_shared_variable('chimin_kramers',chimin_kramers)
       else
         idiag_Kkramersm=0; idiag_Kkramersmx=0; idiag_Kkramersmz=0
         idiag_fradz_kramers=0; idiag_fradx_kramers=0; idiag_fradxy_kramers=0
@@ -5144,7 +5146,7 @@ module Energy
       intent(in) :: p
       intent(inout) :: df
 !
-      real, dimension(nx) :: thdiff, chix, g2, g2_chi
+      real, dimension(nx) :: thdiff, g2, g2_chi
       real, dimension(nx) :: Krho1, del2ss1
       real, dimension(nx,3) :: gradchit_prof
       integer :: j
@@ -5163,7 +5165,7 @@ module Energy
 !  be wrong if you use eos_ionization or eos_idealgas_vapor
 !
       call dot(-2.*nkramers*p%glnrho+(6.5*nkramers+1)*p%glnTT,p%glnTT,g2)
-      call dot(-p%glnrho+p%glnTT, p%glnTT, g2_chi)
+      call dot(p%glnrho+p%glnTT, p%glnTT, g2_chi)
 !
       if (chimax_kramers>0.) then
         where (Krho1 > chimax_kramers/p%cp1)
