@@ -5163,7 +5163,7 @@ module Energy
 !  be wrong if you use eos_ionization or eos_idealgas_vapor
 !
       call dot(-2.*nkramers*p%glnrho+(6.5*nkramers+1)*p%glnTT,p%glnTT,g2)
-      call dot(-p%glnrho+p%glnTT, p%glnTT, g2_chi)
+      call dot(p%glnrho+p%glnTT, p%glnTT, g2_chi)
 !
       if (chimax_kramers>0.) then
         where (Krho1 > chimax_kramers/p%cp1)
