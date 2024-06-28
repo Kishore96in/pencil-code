@@ -1029,8 +1029,14 @@ class __Simulation__(object):
 
         if isinstance(self.param, dict) and self.param['io_strategy'] == 'HDF5':
             proc = "allprocs"
+
+            def fixname(name):
+                if name[-3:] == ".h5":
+                    name = name[:-3]
+                return name
         else:
             proc = "proc0"
+            fixname = lambda name: name
 
         fname = os.path.join(self.datadir, proc, "varN.list")
         if not os.path.isfile(fname):
@@ -1038,9 +1044,9 @@ class __Simulation__(object):
         var_dict = {name: float(time) for name, time in np.loadtxt(fname, dtype=str)}
 
         if isinstance(var_file, list):
-            return [var_dict[k] for k in var_file]
+            return [var_dict[fixname(k)] for k in var_file]
         else:
-            return var_dict[var_file]
+            return var_dict[fixname(var_file)]
 
     def get_pvarlist(self, pos=False):
         """Same as get_varfiles(pos, particles=True)."""
