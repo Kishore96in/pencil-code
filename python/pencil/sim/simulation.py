@@ -1015,6 +1015,32 @@ class __Simulation__(object):
             return [varlist[int(i)] for i in pos]
         return varlist
 
+    def get_var_time(self, var_file):
+        """
+        Read varN.list to find the time corresponding to a varfile
+
+        Arguments:
+            var_file: string or list of strings
+
+        Returns:
+            float or list of floats depending on the type of var_file
+        """
+
+        if isinstance(self.param, dict) and self.param['io_strategy'] == 'HDF5':
+            proc = "allprocs"
+        else:
+            proc = "proc0"
+
+        fname = os.path.join(self.datadir, proc, "varN.list")
+        if not os.path.isfile(fname):
+            raise FileNotFoundError(fname)
+        var_dict = {name: float(time) for name, time in np.loadtxt(fname, dtype=str)}
+
+        if isinstance(var_file, list):
+            return [var_dict[k] for k in var_file]
+        else:
+            return var_dict[var_file]
+
     def get_pvarlist(self, pos=False):
         """Same as get_varfiles(pos, particles=True)."""
         return self.get_varlist(pos=pos, particle=True)
