@@ -6,6 +6,7 @@ manipulate simulations.
 
 import os
 from os.path import join, exists, split, islink, realpath, abspath, basename
+import numpy as np
 
 try:
     from mpi4py import MPI
