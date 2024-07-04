@@ -125,12 +125,12 @@ module power_spectrum
 !
       if (nxgrid /= 1) then
         nk_xyz = min(nk_xyz, nint(nxgrid*L_min/(2*Lx)))
-        nk_xy = min(nk_xy, nint(nxgrid*L_min/(2*Lx)))
+        nk_xy = min(nk_xy, nint(nxgrid*L_min_xy/(2*Lx)))
       endif
 !
       if (nygrid /= 1) then
         nk_xyz = min(nk_xyz, nint(nygrid*L_min/(2*Ly)))
-        nk_xy = min(nk_xy, nint(nygrid*L_min/(2*Ly)))
+        nk_xy = min(nk_xy, nint(nygrid*L_min_xy/(2*Ly)))
       endif
 !
       if (nzgrid /= 1) then
