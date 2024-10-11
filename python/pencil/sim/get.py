@@ -14,6 +14,7 @@ from pencil.io import (
     walklevel,
     )
 from pencil.util import is_sim_dir
+from pencil.sim import simulation
 
 def get(path=".", quiet=False):
     """
