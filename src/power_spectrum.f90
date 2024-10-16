@@ -681,6 +681,14 @@ outer:  do ikz=1,nz
     elseif (sp=='jxb') then
        if (ijxb==0) call fatal_error('get_comp_spectrum','variable "jxb" not existent')
        ar=f(l1:l2,m1:m2,n1:n2,ijxbx+ivec-1)
+    elseif (sp=='o') then
+        if (iuu==0) call fatal_error('get_comp_spectrum','variable "u" not existent')
+        do n=n1,n2
+          do m=m1,m2
+             call curli(f,iuu,bb,ivec)
+             ar(:,m-nghost,n-nghost)=bb
+          enddo
+       enddo
     else
        print*,'comp_spectrum_xy: Warning - There is no such sp=',sp
        return
