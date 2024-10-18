@@ -109,7 +109,7 @@ class Averages(object):
         niter = 9999,
         iter_step=1,
         time_range=None,
-        param=list(),
+        param=None,
         proc=-1,
         precision="f",
         comp_time=False,
@@ -198,7 +198,7 @@ class Averages(object):
 
         simdir = abspath(simdir)
 
-        if isinstance(param, list):
+        if param is None:
             param = read.param(datadir=datadir, quiet=True)
 
         if param.io_strategy != "HDF5":
