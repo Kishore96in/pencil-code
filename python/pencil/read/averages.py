@@ -559,8 +559,7 @@ class Averages(object):
                 for t_idx, tmp_idx in enumerate(itlist):
                     t[t_idx] = tmp[f"{tmp_idx}/time"][()]
                     for var in var_names:
-                        if var in tmp[str(tmp_idx)].keys():
-                            getattr(ext_object, var)[t_idx] = tmp[f"{tmp_idx}/{var}"][()]
+                        getattr(ext_object, var)[t_idx] = tmp[f"{tmp_idx}/{var}"][()]
 
         end_time = time.time()-start_time
         if not quiet:
