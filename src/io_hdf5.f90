@@ -184,11 +184,14 @@ module Io
 !
           if (lwrite_2d) then
             if (nx==1) then
-              call output_hdf5 ('data/'//trim(group), a(l1,:,:,pos))
+!               call output_hdf5 ('data/'//trim(group), a(l1,:,:,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (ny==1) then
-              call output_hdf5 ('data/'//trim(group), a(:,m1,:,pos))
+!               call output_hdf5 ('data/'//trim(group), a(:,m1,:,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (nz==1) then
-              call output_hdf5 ('data/'//trim(group), a(:,:,n1,pos))
+!               call output_hdf5 ('data/'//trim(group), a(:,:,n1,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             else
               call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
             endif
@@ -208,11 +211,14 @@ module Io
 !
           if (lwrite_2d) then
             if (nx==1) then
-              call output_hdf5 ('data/'//trim(group), a(nghost+1,:,:,pos)
+!               call output_hdf5 ('data/'//trim(group), a(nghost+1,:,:,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (ny==1) then
-              call output_hdf5 ('data/'//trim(group), a(:,nghost+1,:,pos)
+!               call output_hdf5 ('data/'//trim(group), a(:,nghost+1,:,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (nz==1) then
-              call output_hdf5 ('data/'//trim(group), a(:,:,nghost+1,pos)
+!               call output_hdf5 ('data/'//trim(group), a(:,:,nghost+1,pos))
+              call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
             else
               call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
             endif
@@ -225,11 +231,14 @@ module Io
         ! write other type of data array
         if (lwrite_2d) then
           if (nx==1) then
-            call output_hdf5 (dataset, a(nghost+1,:,:,na:ne), ne-na+1)
+!             call output_hdf5 (dataset, a(nghost+1,:,:,na:ne), ne-na+1)
+            call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
           elseif (ny==1) then
-            call output_hdf5 (dataset, a(:,nghost+1,:,na:ne), ne-na+1)
+!             call output_hdf5 (dataset, a(:,nghost+1,:,na:ne), ne-na+1)
+            call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
           elseif (nz==1) then
-            call output_hdf5 (dataset, a(:,:,nghost+1,na:ne), ne-na+1)
+!             call output_hdf5 (dataset, a(:,:,nghost+1,na:ne), ne-na+1)
+            call fatal_error('output_snap','lwrite_2d is not completely supported with HDF5 IO')
           else
             call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
           endif
@@ -608,11 +617,14 @@ module Io
 !
           if (lwrite_2d) then
             if (nx==1) then
-              call input_hdf5 ('data/'//trim(dataset_var), a(l1,:,:,pos))
+!               call input_hdf5 ('data/'//trim(dataset_var), a(l1,:,:,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (ny==1) then
-              call input_hdf5 ('data/'//trim(dataset_var), a(:,m1,:,pos))
+!               call input_hdf5 ('data/'//trim(dataset_var), a(:,m1,:,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (nz==1) then
-              call input_hdf5 ('data/'//trim(dataset_var), a(:,:,n1,pos))
+!               call input_hdf5 ('data/'//trim(dataset_var), a(:,:,n1,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             else
               call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
             endif
@@ -628,11 +640,14 @@ module Io
 !
           if (lwrite_2d) then
             if (nx==1) then
-              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(l1,:,:,pos))
+!               call input_hdf5 ('data/'//index_get(mvar_io + pos), a(l1,:,:,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (ny==1) then
-              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,m1,:,pos))
+!               call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,m1,:,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             elseif (nz==1) then
-              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,:,n1,pos))
+!               call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,:,n1,pos))
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
             else
               call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
             endif
@@ -644,11 +659,14 @@ module Io
         ! read other type of data array
         if (lwrite_2d) then
           if (nx==1) then
-            input_hdf5 (dataset, a(l1,:,:), nv)
+!             call input_hdf5 (dataset, a(l1,:,:,:), nv)
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
           elseif (ny==1) then
-            input_hdf5 (dataset, a(:,m1,:), nv)
+!             call input_hdf5 (dataset, a(:,m1,:,:), nv)
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
           elseif (nz==1) then
-            input_hdf5 (dataset, a(:,:,n1), nv)
+!             call input_hdf5 (dataset, a(:,:,n1,:), nv)
+              call fatal_error('input_snap','lwrite_2d is not completely supported with HDF5 IO')
           else
             call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
           endif
