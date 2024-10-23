@@ -92,8 +92,6 @@ module Special
       real, dimension (mx,my,mz,mvar), intent(inout) :: df
       type (pencil_case), intent(in) :: p
 !
-      integer :: i
-!
       call keep_compiler_quiet(f)
 !
       df(l1:l2,m,n,iux) = df(l1:l2,m,n,iux) - tauinv_prof(l1:l2,m,n)*p%uu(:,1)
