@@ -181,7 +181,21 @@ module Io
         do pos=na,ne
           group=index_get(pos)
           if (group == '') cycle
-          call output_hdf5 ('data/'//trim(group), a(:,:,:,pos))
+!
+          if (lwrite_2d) then
+            if (nx==1) then
+              call output_hdf5 ('data/'//trim(group), a(l1,:,:,pos))
+            elseif (ny==1) then
+              call output_hdf5 ('data/'//trim(group), a(:,m1,:,pos))
+            elseif (nz==1) then
+              call output_hdf5 ('data/'//trim(group), a(:,:,n1,pos))
+            else
+              call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
+            endif
+          else
+            call output_hdf5 ('data/'//trim(group), a(:,:,:,pos))
+          endif
+!
         enddo
       elseif (dataset == 'globals') then
         if (.not. present (nv1)) &
@@ -191,11 +205,37 @@ module Io
         do pos=1,nv1
           group=index_get(mvar_io + pos)
           if (group == '') cycle
-          call output_hdf5 ('data/'//trim(group), a(:,:,:,pos))
+!
+          if (lwrite_2d) then
+            if (nx==1) then
+              call output_hdf5 ('data/'//trim(group), a(nghost+1,:,:,pos)
+            elseif (ny==1) then
+              call output_hdf5 ('data/'//trim(group), a(:,nghost+1,:,pos)
+            elseif (nz==1) then
+              call output_hdf5 ('data/'//trim(group), a(:,:,nghost+1,pos)
+            else
+              call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
+            endif
+          else
+            call output_hdf5 ('data/'//trim(group), a(:,:,:,pos))
+          endif
+!
         enddo
       else
         ! write other type of data array
-        call output_hdf5 (dataset, a(:,:,:,na:ne), ne-na+1)
+        if (lwrite_2d) then
+          if (nx==1) then
+            call output_hdf5 (dataset, a(nghost+1,:,:,na:ne), ne-na+1)
+          elseif (ny==1) then
+            call output_hdf5 (dataset, a(:,nghost+1,:,na:ne), ne-na+1)
+          elseif (nz==1) then
+            call output_hdf5 (dataset, a(:,:,nghost+1,na:ne), ne-na+1)
+          else
+            call fatal_error('output_snap','lwrite_2d used for 3-D simulation!')
+          endif
+        else
+          call output_hdf5 (dataset, a(:,:,:,na:ne), ne-na+1)
+        endif
       endif
       call file_close_hdf5
 !
@@ -565,17 +605,56 @@ module Io
           else
             dataset_var = index_get(pos)
           endif
-          call input_hdf5 ('data/'//trim(dataset_var), a(:,:,:,pos))
+!
+          if (lwrite_2d) then
+            if (nx==1) then
+              call input_hdf5 ('data/'//trim(dataset_var), a(l1,:,:,pos))
+            elseif (ny==1) then
+              call input_hdf5 ('data/'//trim(dataset_var), a(:,m1,:,pos))
+            elseif (nz==1) then
+              call input_hdf5 ('data/'//trim(dataset_var), a(:,:,n1,pos))
+            else
+              call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
+            endif
+          else
+            call input_hdf5 ('data/'//trim(dataset_var), a(:,:,:,pos))
+!
+          endif
         enddo
       elseif (dataset == 'globals') then
         ! read components of globals array
         do pos=ioptest(ivar0,1), nv
           if (index_get(mvar_io + pos) == '') cycle
-          call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,:,:,pos))
+!
+          if (lwrite_2d) then
+            if (nx==1) then
+              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(l1,:,:,pos))
+            elseif (ny==1) then
+              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,m1,:,pos))
+            elseif (nz==1) then
+              call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,:,n1,pos))
+            else
+              call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
+            endif
+          else
+            call input_hdf5 ('data/'//index_get(mvar_io + pos), a(:,:,:,pos))
+          endif
         enddo
       else
         ! read other type of data array
-        call input_hdf5 (dataset, a, nv)
+        if (lwrite_2d) then
+          if (nx==1) then
+            input_hdf5 (dataset, a(l1,:,:), nv)
+          elseif (ny==1) then
+            input_hdf5 (dataset, a(:,m1,:), nv)
+          elseif (nz==1) then
+            input_hdf5 (dataset, a(:,:,n1), nv)
+          else
+            call fatal_error('input_snap','lwrite_2d used for 3-D simulation!')
+          endif
+        else
+          call input_hdf5 (dataset, a, nv)
+        endif
       endif
 !
       if (lode .and. lread_add) call input_ode(file)
