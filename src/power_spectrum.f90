@@ -778,7 +778,8 @@ outer:  do ikz=1,nz
 !
 !  to add further fields, modify here!
 !
-  if ( sp(1:1)=='u' .or. sp(1:1)=='b' .or. sp(1:1)=='a' .or. sp(1:1)=='s' ) then
+  if ( sp(1:1)=='u' .or. sp(1:1)=='b' .or. sp(1:1)=='a' .or. sp(1:1)=='s' &
+      .or. sp(1:1)=='o') then
     sp_field=sp(1:1)
     cpos=2
   elseif (len(trim(sp))>=3) then
