@@ -23,7 +23,7 @@ module Special
   use Cdata
   use Sub, only: step
   use General, only: keep_compiler_quiet
-  use Messages, only: svn_id, fatal_error
+  use Messages, only: svn_id, fatal_error, not_implemented
 !
   implicit none
 !
@@ -34,12 +34,14 @@ module Special
   real :: z_1=impossible, z_2=impossible
   real :: tau=1 !timescale over which the velocity should be damped
   real :: w=0 !width of the step function
+  logical :: ldamp_rho=F !whether to damp the density to its horizontal average
+  logical :: ldamp_ss=F !whether to damp the entropy to its horizontal average
 !
   real, dimension (mx,my,mz) :: tauinv_prof
 !
 ! run parameters
   namelist /special_run_pars/ &
-    x_1, x_2, y_1, y_2, z_1, z_2, tau, w
+    x_1, x_2, y_1, y_2, z_1, z_2, tau, w, ldamp_rho, ldamp_ss
 !
   contains
 ! !***********************************************************************
@@ -60,6 +62,9 @@ module Special
                    *spread(spread(step(y,y_1,-w)*step(y,y_2,w),1,mx),3,mz) &
                    *spread(spread(step(z,z_1,-w)*step(z,z_2,w),1,mx),2,my) &
                    /tau
+!
+      if (ldamp_rho) call not_implemented('initialize_special', 'damping rho')
+      if (ldamp_ss) call not_implemented('initialize_special', 'damping entropy')
     endsubroutine initialize_special
 !***********************************************************************
     subroutine pencil_criteria_special
