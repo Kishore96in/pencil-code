@@ -65,13 +65,13 @@ module Special
       if (ldamp_rho) then
         if (ldensity_nolog) call not_implemented('initialize_special', 'damping rho with ldensity_nolog=T')
         if (lreference_state) call not_implemented('initialize_special', 'damping rho with lreference_state=T')
-        rho_prof = exp(f(0,0,:,ilnrho))
+        rho_prof = exp(f(1,1,:,ilnrho))
       endif
 !
       if (ldamp_ss) then
         if (iss==0) call fatal_error('initialize_special', 'could not find entropy variable to be damped')
         if (pretend_lnTT) call not_implemented('initialize_special', 'damping entropy with pretend_lnTT=T')
-        ss_prof = f(0,0,:,iss)
+        ss_prof = f(1,1,:,iss)
       endif
 !
     endsubroutine initialize_special
