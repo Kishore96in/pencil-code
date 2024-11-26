@@ -34,8 +34,8 @@ module Special
   real :: z_1=impossible, z_2=impossible
   real :: tau=1 !timescale over which the velocity should be damped
   real :: w=0 !width of the step function
-  logical :: ldamp_rho=.false. !whether to damp the density to its horizontal average
-  logical :: ldamp_ss=.false. !whether to damp the entropy to its horizontal average
+  logical :: ldamp_rho=.false. !whether to damp the density to its initial profile
+  logical :: ldamp_ss=.false. !whether to damp the entropy to its initial profile
 !
   real, dimension (mx,my,mz) :: tauinv_prof
   real, dimension (mz) :: rho_prof, ss_prof
@@ -71,6 +71,7 @@ module Special
       if (ldamp_ss) then
         if (iss==0) call fatal_error('initialize_special', 'could not find entropy variable to be damped')
         if (pretend_lnTT) call not_implemented('initialize_special', 'damping entropy with pretend_lnTT=T')
+        if (lreference_state) call not_implemented('initialize_special', 'damping entropy with lreference_state=T')
         ss_prof = f(1,1,:,iss)
       endif
 !
