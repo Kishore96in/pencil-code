@@ -34,8 +34,8 @@ module Special
   real :: z_1=impossible, z_2=impossible
   real :: tau=1 !timescale over which the velocity should be damped
   real :: w=0 !width of the step function
-  logical :: ldamp_rho=.false. !whether to damp the density to its horizontal average
-  logical :: ldamp_ss=.false. !whether to damp the entropy to its horizontal average
+  logical :: ldamp_rho=.false. !whether to damp the density to its initial profile
+  logical :: ldamp_ss=.false. !whether to damp the entropy to its initial profile
 !
   real, dimension (mx,my,mz) :: tauinv_prof
   real, dimension (mz) :: rho_prof, ss_prof
