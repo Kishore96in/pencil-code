@@ -80,6 +80,8 @@ module Special
     subroutine pencil_criteria_special
 !
       lpenc_requested(i_uu)=.true.
+      if (ldamp_rho) lpenc_requested(i_rho)=.true.
+      if (ldamp_ss) lpenc_requested(i_ss)=.true.
 !
     endsubroutine pencil_criteria_special
 !***********************************************************************
