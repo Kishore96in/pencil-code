@@ -23,7 +23,7 @@ module Special
   use Cdata
   use Sub, only: step
   use General, only: keep_compiler_quiet
-  use Messages, only: svn_id, fatal_error
+  use Messages, only: svn_id, fatal_error, not_implemented
 !
   implicit none
 !
@@ -34,20 +34,21 @@ module Special
   real :: z_1=impossible, z_2=impossible
   real :: tau=1 !timescale over which the velocity should be damped
   real :: w=0 !width of the step function
+  logical :: ldamp_rho=F !whether to damp the density to its horizontal average
+  logical :: ldamp_ss=F !whether to damp the entropy to its horizontal average
 !
   real, dimension (mx,my,mz) :: tauinv_prof
+  real, dimension (mz) :: rho_prof, ss_prof
 !
 ! run parameters
   namelist /special_run_pars/ &
-    x_1, x_2, y_1, y_2, z_1, z_2, tau, w
+    x_1, x_2, y_1, y_2, z_1, z_2, tau, w, ldamp_rho, ldamp_ss
 !
   contains
 ! !***********************************************************************
     subroutine initialize_special(f)
 !
       real, dimension (mx,my,mz,mfarray) :: f
-!
-      call keep_compiler_quiet(f)
 !
       if (x_1==impossible) x_1=xyz0(1)
       if (y_1==impossible) y_1=xyz0(2)
@@ -60,6 +61,19 @@ module Special
                    *spread(spread(step(y,y_1,-w)*step(y,y_2,w),1,mx),3,mz) &
                    *spread(spread(step(z,z_1,-w)*step(z,z_2,w),1,mx),2,my) &
                    /tau
+!
+      if (ldamp_rho) then
+        if (ldensity_nolog) call not_implemented('initialize_special', 'damping rho with ldensity_nolog=T')
+        if (lreference_state) call not_implemented('initialize_special', 'damping rho with lreference_state=T')
+        rho_prof = exp(f(0,0,:,ilnrho))
+      endif
+!
+      if (ldamp_ss) then
+        if (iss==0) call fatal_error('initialize_special', 'could not find entropy variable to be damped')
+        if (pretend_lnTT) call not_implemented('initialize_special', 'damping entropy with pretend_lnTT=T')
+        ss_prof = f(0,0,:,iss)
+      endif
+!
     endsubroutine initialize_special
 !***********************************************************************
     subroutine pencil_criteria_special
@@ -99,6 +113,30 @@ module Special
       df(l1:l2,m,n,iuz) = df(l1:l2,m,n,iuz) - tauinv_prof(l1:l2,m,n)*p%uu(:,3)
 !
     endsubroutine special_calc_hydro
+!***********************************************************************
+    subroutine special_calc_density(f,df,p)
+!
+      real, dimension (mx,my,mz,mfarray), intent(in) :: f
+      real, dimension (mx,my,mz,mvar), intent(inout) :: df
+      type (pencil_case), intent(in) :: p
+!
+      call keep_compiler_quiet(f)
+!
+      df(l1:l2,m,n,ilnrho) = df(l1:l2,m,n,ilnrho) - tauinv_prof(l1:l2,m,n)*(p%rho/rho_prof(n) - 1)
+!
+    endsubroutine special_calc_density
+!***********************************************************************
+    subroutine special_calc_energy(f,df,p)
+!
+      real, dimension (mx,my,mz,mfarray), intent(in) :: f
+      real, dimension (mx,my,mz,mvar), intent(inout) :: df
+      type (pencil_case), intent(in) :: p
+!
+      call keep_compiler_quiet(f)
+!
+      df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss) - tauinv_prof(l1:l2,m,n)*(p%ss - ss_prof(n))
+!
+    endsubroutine special_calc_energy
 !***********************************************************************
 !************        DO NOT DELETE THE FOLLOWING       **************
 !********************************************************************
