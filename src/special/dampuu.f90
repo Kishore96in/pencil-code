@@ -71,6 +71,7 @@ module Special
       if (ldamp_ss) then
         if (iss==0) call fatal_error('initialize_special', 'could not find entropy variable to be damped')
         if (pretend_lnTT) call not_implemented('initialize_special', 'damping entropy with pretend_lnTT=T')
+        if (lreference_state) call not_implemented('initialize_special', 'damping entropy with lreference_state=T')
         ss_prof = f(1,1,:,iss)
       endif
 !
