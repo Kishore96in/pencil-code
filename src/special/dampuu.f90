@@ -122,7 +122,9 @@ module Special
 !
       call keep_compiler_quiet(f)
 !
-      df(l1:l2,m,n,ilnrho) = df(l1:l2,m,n,ilnrho) - tauinv_prof(l1:l2,m,n)*(p%rho/rho_prof(n) - 1)
+      if (ldamp_rho) then
+        df(l1:l2,m,n,ilnrho) = df(l1:l2,m,n,ilnrho) - tauinv_prof(l1:l2,m,n)*(p%rho/rho_prof(n) - 1)
+      endif
 !
     endsubroutine special_calc_density
 !***********************************************************************
@@ -134,7 +136,9 @@ module Special
 !
       call keep_compiler_quiet(f)
 !
-      df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss) - tauinv_prof(l1:l2,m,n)*(p%ss - ss_prof(n))
+      if (ldamp_ss) then
+        df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss) - tauinv_prof(l1:l2,m,n)*(p%ss - ss_prof(n))
+      endif
 !
     endsubroutine special_calc_energy
 !***********************************************************************
