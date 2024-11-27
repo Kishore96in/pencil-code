@@ -63,6 +63,7 @@ module Special
                    /tau
 !
       if (ldamp_rho) then
+        if (ilnrho==0) call fatal_error('initialize_special', 'could not find density variable to be damped')
         if (ldensity_nolog) call not_implemented('initialize_special', 'damping rho with ldensity_nolog=T')
         if (lreference_state) call not_implemented('initialize_special', 'damping rho with lreference_state=T')
         rho_prof = exp(f(l1,m1,:,ilnrho))
