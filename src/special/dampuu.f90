@@ -60,7 +60,7 @@ module Special
       tauinv_prof = spread(spread(step(x,x_1,-w)+step(x,x_2,w),2,my),3,mz) &
                    +spread(spread(step(y,y_1,-w)+step(y,y_2,w),1,mx),3,mz) &
                    +spread(spread(step(z,z_1,-w)+step(z,z_2,w),1,mx),2,my)
-      where (tauinv_prof>1) tauinv_prof = 1
+      where (tauinv_prof>1) tauinv_prof = 1 !avoid damping being too strong in the corners
       tauinv_prof = tauinv_prof/tau
 !
       if (ldamp_rho) then
