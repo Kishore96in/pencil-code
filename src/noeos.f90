@@ -663,6 +663,8 @@ module EquationOfState
       integer, intent(IN) :: topbot
       real, dimension (:,:,:,:) :: f
 !
+      call fatal_error('bc_ss_flux_turb','not implemented')
+!
       call keep_compiler_quiet(f)
       call keep_compiler_quiet(topbot)
 !
@@ -674,6 +676,8 @@ module EquationOfState
 !
       integer, intent(IN) :: topbot
       real, dimension (:,:,:,:) :: f
+!
+      call fatal_error('bc_ss_flux_turb_x','not implemented')
 !
       call keep_compiler_quiet(f)
       call keep_compiler_quiet(topbot)
@@ -687,6 +691,8 @@ module EquationOfState
       integer, intent(IN) :: topbot
       real, dimension (mx,my,mz,mfarray) :: f
 !
+      call fatal_error('bc_ss_flux_condturb_x','not implemented')
+!
       call keep_compiler_quiet(f)
       call keep_compiler_quiet(topbot)
 !
@@ -699,6 +705,8 @@ module EquationOfState
       integer, intent(IN) :: topbot
       real, dimension (mx,my,mz,mfarray) :: f
 !
+      call fatal_error('bc_ss_flux_condturb_mean_x','not implemented')
+!
       call keep_compiler_quiet(f)
       call keep_compiler_quiet(topbot)
 !
@@ -710,6 +718,8 @@ module EquationOfState
 !
       integer, intent(IN) :: topbot
       real, dimension (mx,my,mz,mfarray) :: f
+!
+      call fatal_error('bc_ss_flux_condturb_z','not implemented')
 !
       call keep_compiler_quiet(f)
       call keep_compiler_quiet(topbot)
@@ -1890,5 +1900,15 @@ module EquationOfState
     call copy_addr(lnTT0,p_par(6))
 
     endsubroutine pushpars2c
+!***********************************************************************
+    subroutine eos_before_boundary(f)
+!
+!     05-dec-2024/Kishore: added dummy routine
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      call keep_compiler_quiet(f)
+!
+    endsubroutine eos_before_boundary
 !***********************************************************************
 endmodule EquationOfState

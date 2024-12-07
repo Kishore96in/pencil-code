@@ -3211,6 +3211,9 @@ module EquationOfState
 !   3-aug-2002/wolf: coded
 !  26-aug-2003/tony: distributed across ionization modules
 !  11-oct-2016/MR: changes for use of one-sided BC formulation (chosen by setting new optional switch lone_sided)
+!  07-dec-2024/Kishore: remove l2nd=T from the set_ghosts_for_onesided_ders calls;
+!                       verified that fradz_Kprof is now constant in the steady
+!                       state of a 1D thermal conduction problem.
 !
       use General, only: loptest
       use Deriv, only: set_ghosts_for_onesided_ders
@@ -3250,7 +3253,7 @@ module EquationOfState
             f(l1:l2,:,n1,iss) = f(l1:l2,:,n1,iss) - spread(reference_state(:,iref_s),2,my)
 !
           if (loptest(lone_sided)) then
-            call set_ghosts_for_onesided_ders(f,topbot,iss,3,.true.)
+            call set_ghosts_for_onesided_ders(f,topbot,iss,3)
           else
 !
 !  Distinguish cases for linear and logarithmic density
@@ -3266,6 +3269,9 @@ module EquationOfState
                    - 2*(cp-cv)*(lnrho_xy-lnrho0)
               enddo
             else
+!  Kishore: This seems to be setting d^2(lnTT) = 0. Why does that make sense?
+!  Kishore: If anything, I would expect d^2(TT)=0 (at least for constant
+!  Kishore: thermal conductivity).
               do i=1,nghost
                 f(:,:,n1-i,iss) = -f(:,:,n1+i,iss) + tmp &
                     - (cp-cv)*(f(:,:,n1+i,ilnrho)+f(:,:,n1-i,ilnrho)-2*lnrho0)
@@ -3276,7 +3282,7 @@ module EquationOfState
         elseif (lentropy .and. pretend_lnTT) then
           f(:,:,n1,iss) = log(cs2bot/gamma_m1)
           if (loptest(lone_sided)) then
-            call set_ghosts_for_onesided_ders(f,topbot,iss,3,.true.)
+            call set_ghosts_for_onesided_ders(f,topbot,iss,3)
           else
             do i=1,nghost; f(:,:,n1-i,iss)=2*f(:,:,n1,iss)-f(:,:,n1+i,iss); enddo
           endif
@@ -3287,7 +3293,7 @@ module EquationOfState
             f(:,:,n1,ilnTT) = log(cs2bot/gamma_m1)
           endif
           if (loptest(lone_sided)) then
-            call set_ghosts_for_onesided_ders(f,topbot,ilnTT,3,.true.)
+            call set_ghosts_for_onesided_ders(f,topbot,ilnTT,3)
           else
             do i=1,nghost; f(:,:,n1-i,ilnTT)=2*f(:,:,n1,ilnTT)-f(:,:,n1+i,ilnTT); enddo
           endif
@@ -3312,7 +3318,7 @@ module EquationOfState
             f(l1:l2,:,n2,iss) = f(l1:l2,:,n2,iss) - spread(reference_state(:,iref_s),2,my)
 !
           if (loptest(lone_sided)) then
-            call set_ghosts_for_onesided_ders(f,topbot,iss,3,.true.)
+            call set_ghosts_for_onesided_ders(f,topbot,iss,3)
           else
 !
 !  Distinguish cases for linear and logarithmic density
@@ -3334,7 +3340,7 @@ module EquationOfState
         elseif (lentropy .and. pretend_lnTT) then
             f(:,:,n2,iss) = log(cs2top/gamma_m1)
             if (loptest(lone_sided)) then
-              call set_ghosts_for_onesided_ders(f,topbot,iss,3,.true.)
+              call set_ghosts_for_onesided_ders(f,topbot,iss,3)
             else
               do i=1,nghost; f(:,:,n2+i,iss)=2*f(:,:,n2,iss)-f(:,:,n2-i,iss); enddo
             endif
@@ -3345,7 +3351,7 @@ module EquationOfState
               f(:,:,n2,ilnTT) = log(cs2top/gamma_m1)
             endif
             if (loptest(lone_sided)) then
-              call set_ghosts_for_onesided_ders(f,topbot,ilnTT,3,.true.)
+              call set_ghosts_for_onesided_ders(f,topbot,ilnTT,3)
             else
               do i=1,nghost; f(:,:,n2+i,ilnTT)=2*f(:,:,n2,ilnTT)-f(:,:,n2-i,ilnTT); enddo
             endif
