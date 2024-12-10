@@ -214,7 +214,7 @@ module EquationOfState
       use SharedVariables, only: get_shared_variable
       use Sub, only: register_report_aux
 !
-      real, dimension (mx,my,mz,mfarray), intent(in) :: f
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
       mudry1=1/mudry
       muvap1=1/muvap
@@ -229,6 +229,14 @@ module EquationOfState
       call register_report_aux('fvap',ifvap)
       call register_report_aux('mumol1',imumol1)
       call register_report_aux('cp',icp)
+!
+!  Prevent use of uninitialized variables by the initial conditions. These will be updated later by init_eos.
+      f(:,:,:,ifvap) = 0
+      f(:,:,:,imumol1) = mudry1
+      f(:,:,:,icp) = cpdry
+!
+      if (init_loops==1) call warning('initialize_eos', &
+        'Using correct values of cp etc. for initial conditions requires init_loops>1')
 !
 !  Write constants to disk. In future we may want to deal with this
 !  using an include file or another module.
@@ -944,6 +952,45 @@ module EquationOfState
 !
     endsubroutine eoscalc_pencil
 !***********************************************************************
+    subroutine eoscalc_point_f(ivars,f,lnrho,ss,yH,lnTT,ee,pp,cs2)
+!
+!   07-dec-2024/Kishore: added
+!
+      integer, intent(in) :: ivars
+      real, dimension(mfarray), intent(in) :: f
+      real, optional, intent(out) :: lnrho, ss, yH, lnTT, ee, pp, cs2
+      real :: cp, cv, lnrho_, ss_, lnTT_, ee_, pp_, cs2_
+!
+      if (present(yh)) call fatal_error('eoscalc_point_f','yH is not relevant for this EOS')
+      if (lreference_state) call not_implemented('eoscalc_point_f', 'lreference_state=T')
+      if (pretend_lnTT) call not_implemented('eoscalc_point_f', 'pretend_lnTT=T')
+!
+      select case (ivars)
+      case (ilnrho_ss)
+        lnrho_ = f(ilnrho)
+        if (present(lnrho)) lnrho=lnrho_
+!
+        ss_ = f(iss)
+        if (present(ss)) ss=ss_
+!
+        if (present(lnTT).or.present(ee).or.present(pp).or.present(cs2)) then
+          cp = f(icp)
+          cv = cp*gamma1
+!
+!         This formula works because cp,cv are independent of rho,TT
+!
+          lnTT_ = lnTT0 + ss_/cv + gamma_m1*(lnrho_-lnrho0)
+          if (present(lnTT)) lnTT = lnTT_
+          if (present(ee)) ee = cv*exp(lnrho_+lnTT_)
+          if (present(pp)) pp = (cp-cv)*exp(lnrho_+lnTT_)
+          if (present(cs2)) cs2 = cp*gamma_m1*exp(lnTT_)
+        endif
+      case default
+        call not_implemented('eoscalc_point_f','thermodynamic variable combination')
+      endselect
+!
+    endsubroutine eoscalc_point_f
+!***********************************************************************
     subroutine get_soundspeed(lnTT,cs2)
 !
       real :: lnTT, cs2
@@ -1004,20 +1051,6 @@ module EquationOfState
       call keep_compiler_quiet(ss)
 !
     endsubroutine isothermal_entropy
-!***********************************************************************
-    subroutine bc_ss_flux(f,topbot,lone_sided)
-!
-      real, dimension (mx,my,mz,mfarray) :: f
-      integer, intent(IN) :: topbot
-      logical, optional :: lone_sided
-!
-      call fatal_error('bc_ss_flux','not implemented')
-!
-      call keep_compiler_quiet(f)
-      call keep_compiler_quiet(topbot)
-      call keep_compiler_quiet(lone_sided)
-!
-    endsubroutine bc_ss_flux
 !***********************************************************************
     subroutine bc_ss_temp_old(f,topbot)
 !
@@ -1427,22 +1460,47 @@ module EquationOfState
 !***********************************************************************
     subroutine eos_before_boundary(f)
 !
+!     Put cp in the f-array so that get_gamma_etc can be used by boundary
+!     conditions.
+!
 !     05-dec-2024/kishore: added
+!     07-dec-2024/Kishore: outsourced to eos_update_aux
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-!     Subroutine get_gamma_etc requires cp to be in the f-array. Usage of
-!     get_gamma_etc in boundary condition routines then requires that cp be
-!     present in the f-array before the boundary conditions are called.
+      call eos_update_aux(f)
+!
+    endsubroutine eos_before_boundary
+!***********************************************************************
+    subroutine init_eos(f)
+!
+!     Put cp in the f-array so that get_gamma_etc can be used by initial
+!     conditions. Currently only works as intended with init_loops>1.
+!
+!     07-dec-2024/Kishore: added
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      call eos_update_aux(f)
+!
+    endsubroutine init_eos
+!***********************************************************************
+    subroutine eos_update_aux(f)
+!
+!     Subroutine get_gamma_etc requires cp to be in the f-array.
 !     Calculating cp requires fvap and mumol1; we then keep them in the f-array
 !     to avoid unnecessary recomputation if these are needed as pencils later on.
+!
+!     05-dec-2024/kishore: added
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
       f(l1:l2,m1:m2,n1:n2,ifvap) = f(l1:l2,m1:m2,n1:n2,iacc)/(1+f(l1:l2,m1:m2,n1:n2,iacc))
       f(l1:l2,m1:m2,n1:n2,imumol1) = (1-f(l1:l2,m1:m2,n1:n2,ifvap))*mudry1 &
                                      +   f(l1:l2,m1:m2,n1:n2,ifvap)*muvap1
       f(l1:l2,m1:m2,n1:n2,icp) = cpdry*mudry*f(l1:l2,m1:m2,n1:n2,imumol1)
 !
-    endsubroutine eos_before_boundary
+    endsubroutine eos_update_aux
 !***********************************************************************
 !********************************************************************
 !********************************************************************
