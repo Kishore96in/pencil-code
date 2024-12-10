@@ -11,7 +11,7 @@
 ! CPARAM logical, parameter :: leos_idealgas = .false., leos_chemistry = .false.
 !
 ! MVAR CONTRIBUTION 0
-! MAUX CONTRIBUTION 3
+! MAUX CONTRIBUTION 4
 !
 ! PENCILS PROVIDED ss; gss(3); ee; pp; lnTT; cs2; cp; cp1; cp1tilde
 ! PENCILS PROVIDED glnTT(3); TT; TT1; gTT(3); yH; hss(3,3); hlnTT(3,3)
@@ -45,6 +45,7 @@ module EquationOfState
   real :: gamma1   !(=1/gamma)
   real :: cpdry=impossible, cpdry1=impossible
   real :: cvdry=impossible, cvdry1=impossible
+  real :: cpgas, lnmuvapbydry
   real :: cs2bot=1.0, cs2top=1.0
   integer :: imass=1
   integer :: ieosvars=-1, ieosvar1=-1, ieosvar2=-1, ieosvar_count=0
@@ -107,6 +108,10 @@ module EquationOfState
       call register_report_aux('fvap',ifvap)
       call register_report_aux('mumol1',imumol1)
       call register_report_aux('cp',icp)
+!
+!  Also keep lnTT, mainly because its expression is so complicated that it is a pain to write out the formula for its derivatives.
+!
+      call register_report_aux('lnTT',ilnTT)
 !
 ! Shared variables
 !
@@ -191,6 +196,8 @@ module EquationOfState
       cpdry1=1/cpdry
       cvdry=gamma1*cpdry
       cvdry1=gamma*cpdry1
+      cpgas=cpdry*mudry
+      lnmuvapbydry=log(muvap/mudry)
 !
 !  Need to calculate the equivalent of cs0.
 !  Distinguish between gamma=1 case and not.
@@ -491,24 +498,6 @@ module EquationOfState
 !  Pencils for thermodynamic quantities for given lnrho or rho and ss.
 !
       case (ilnrho_ss,irho_ss)
-        if (lpencil_in(i_lnTT)) then
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_ss)=.true.
-          lpencil_in(i_lnrho)=.true.
-        endif
-        if (lpencil_in(i_glnTT)) then
-          lpencil_in(i_glnrho)=.true.
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_gss)=.true.
-        endif
-        if (lpencil_in(i_del2lnTT)) then
-          lpencil_in(i_del2lnrho)=.true.
-          lpencil_in(i_del2ss)=.true.
-        endif
-        if (lpencil_in(i_hlnTT)) then
-          lpencil_in(i_hlnrho)=.true.
-          lpencil_in(i_hss)=.true.
-        endif
 !
 !  Pencils for thermodynamic quantities for given lnrho or rho and lnTT.
 !
@@ -629,21 +618,14 @@ module EquationOfState
 ! del6ss
         if (lpenc_loc(i_del6ss)) call del6(f,iss,p%del6ss)
 ! lnTT
-        if (lpenc_loc(i_lnTT)) p%lnTT=lnTT0+p%cv1*p%ss+gamma_m1*(p%lnrho-lnrho0)
+!
+        if (lpenc_loc(i_lnTT)) p%lnTT=f(l1:l2,m,n,ilnTT)
 ! glnTT
-        if (lpenc_loc(i_glnTT)) then
-          do i=1,3
-            p%glnTT(:,i)=gamma_m1*p%glnrho(:,i)+p%cv1*p%gss(:,i)
-          enddo
-        endif
+        if (lpenc_loc(i_glnTT)) call grad(f,ilnTT,p%glnTT)
 ! del2lnTT
-        if (lpenc_loc(i_del2lnTT)) p%del2lnTT=gamma_m1*p%del2lnrho+p%cv1*p%del2ss
+        if (lpenc_loc(i_del2lnTT)) call del2(f,ilnTT,p%del2lnTT)
 ! hlnTT
-        if (lpenc_loc(i_hlnTT)) then
-          do j=1,3; do i=1,3
-            p%hlnTT(:,i,j)=gamma_m1*p%hlnrho(:,i,j)+p%cv1*p%hss(:,i,j)
-          enddo; enddo
-        endif
+        if (lpenc_loc(i_hlnTT)) call g2ij(f,ilnTT,p%hlnTT)
 !
 !  Work out thermodynamic quantities for given lnrho or rho and lnTT.
 !
@@ -961,7 +943,7 @@ module EquationOfState
       integer, intent(in) :: ivars
       real, dimension(mfarray), intent(in) :: f
       real, optional, intent(out) :: lnrho, ss, yH, lnTT, ee, pp, cs2
-      real :: cp, cv, lnrho_, ss_, lnTT_, ee_, pp_, cs2_
+      real :: cp, cv, cv1, lnrho_, ss_, lnTT_, ee_, pp_, cs2_, fvap
 !
       if (present(yh)) call fatal_error('eoscalc_point_f','yH is not relevant for this EOS')
       if (lreference_state) call not_implemented('eoscalc_point_f', 'lreference_state=T')
@@ -978,10 +960,17 @@ module EquationOfState
         if (present(lnTT).or.present(ee).or.present(pp).or.present(cs2)) then
           cp = f(icp)
           cv = cp*gamma1
+          cv1 = 1./cv
+          fvap = f(ifvap)
 !
-!         This formula works because cp,cv are independent of rho,TT
+!         Can be derived by using the Sackur-Tetrode equation to write down the entropy of a mixture of particles of two different masses.
+!         NOTE that one does not recover the usual expression by just setting muvap=mudry; this is because we are still treating the two kinds of particles as distinguishable.
 !
-          lnTT_ = lnTT0 + ss_/cv + gamma_m1*(lnrho_-lnrho0)
+          lnTT_ =   lnTT0 + ss_*cv1 + gamma_m1*(lnrho_-lnrho0) &
+                  - cpgas*lnmuvapbydry*muvap1*cv1*fvap
+          if (fvap>0) lnTT_ = lnTT_ + Rgas*muvap1*cv1*fvap*log(fvap)
+          if (fvap<1) lnTT_ = lnTT_ + Rgas*mudry1*cv1*(1-fvap)*log(1-fvap)
+!
           if (present(lnTT)) lnTT = lnTT_
           if (present(ee)) ee = cv*exp(lnrho_+lnTT_)
           if (present(pp)) pp = (cp-cv)*exp(lnrho_+lnTT_)
@@ -1473,6 +1462,21 @@ module EquationOfState
       call eos_update_aux(f)
 !
     endsubroutine eos_before_boundary
+!***********************************************************************
+    subroutine eos_after_boundary(f)
+!
+!     Auxiliary variables that are needed for pencil calculation. Since we need to take derivatives of these guys, make sure the ghost zones are updated as well
+!
+!     12-dec-2024/kishore: added
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      integer :: l,m,n
+!
+      do n=1,mz; do m=1,my; do l=1,mx
+        call eoscalc(ieosvars, f(l,m,n,:), lnTT=f(l,m,n,ilnTT))
+      enddo; enddo; enddo
+    endsubroutine eos_after_boundary
 !***********************************************************************
     subroutine init_eos(f)
 !
