@@ -18,8 +18,6 @@
 ! PENCILS PROVIDED del2ss; del6ss; del2lnTT; cv; cv1; del6lnTT; gamma
 ! PENCILS PROVIDED del2TT; del6TT; mumol; mumol1; glnmumol(3)
 ! PENCILS PROVIDED rho_anel; ppvap; csvap2; fvap; gfvap(3)
-! PENCILS PROVIDED gcv(3); gcp(3); del2cp; del2cv; hcp(3,3); hcv(3,3)
-! PENCILS PROVIDED gcv1(3); del2cv1; hcv1(3,3)
 !
 !***************************************************************
 module EquationOfState
@@ -457,23 +455,6 @@ module EquationOfState
         lpencil_in(i_gfvap)=.true.
         lpencil_in(i_fvap)=.true.
       endif
-      if (lpencil_in(i_hcv1)) then
-        lpencil_in(i_hcv)=.true.
-        lpencil_in(i_cv1)=.true.
-        lpencil_in(i_gcv)=.true.
-      endif
-      if (lpencil_in(i_del2cv1)) then
-        lpencil_in(i_gcv)=.true.
-        lpencil_in(i_del2cv)=.true.
-        lpencil_in(i_cv1)=.true.
-      endif
-      if (lpencil_in(i_gcv1)) then
-        lpencil_in(i_gcv)=.true.
-        lpencil_in(i_cv1)=.true.
-      endif
-      if (lpencil_in(i_gcv)) lpencil_in(i_gcp)=.true.
-      if (lpencil_in(i_del2cv)) lpencil_in(i_del2cp)=.true.
-      if (lpencil_in(i_hcv)) lpencil_in(i_hcp)=.true.
       if (lpencil_in(i_mumol)) lpencil_in(i_mumol1)=.true.
       !if (lpencil_in(i_mumol1)) lpencil_in(i_cc)=.true.
       if (lpencil_in(i_mumol1)) lpencil_in(i_fvap)=.true.
@@ -519,24 +500,14 @@ module EquationOfState
           lpencil_in(i_glnrho)=.true.
           lpencil_in(i_cv1)=.true.
           lpencil_in(i_gss)=.true.
-          lpencil_in(i_gcv1)=.true.
         endif
         if (lpencil_in(i_del2lnTT)) then
           lpencil_in(i_del2lnrho)=.true.
           lpencil_in(i_del2ss)=.true.
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_del2cv)=.true.
-          lpencil_in(i_gss)=.true.
-          lpencil_in(i_gcv)=.true.
         endif
         if (lpencil_in(i_hlnTT)) then
           lpencil_in(i_hlnrho)=.true.
           lpencil_in(i_hss)=.true.
-          lpencil_in(i_hcv1)=.true.
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_ss)=.true.
-          lpencil_in(i_gcv1)=.true.
-          lpencil_in(i_gss)=.true.
         endif
 !
 !  Pencils for thermodynamic quantities for given lnrho or rho and lnTT.
@@ -580,7 +551,6 @@ module EquationOfState
       intent(inout) :: p
 !
       integer :: i,j
-      real, dimension (nx) :: tmp1, tmp2
 !
       if (leos_isentropic.or.leos_isothermal.or.leos_localisothermal) &
           call fatal_error('pencil_interdep_eos','case not implemented')
@@ -640,39 +610,6 @@ module EquationOfState
       if (lpenc_loc(i_cv1)) p%cv1=gamma*p%cp1
 ! cp1tilde
       if (lpenc_loc(i_cp1tilde)) p%cp1tilde=p%cp1
-! gcp
-      if (lpenc_loc(i_gcp)) call grad(f,icp,p%gcp)
-! del2cp
-      if (lpenc_loc(i_del2cp)) call del2(f,icp,p%del2cp)
-! hcp
-      if (lpenc_loc(i_hcp)) call g2ij(f,icp,p%hcp)
-! gcv
-      if (lpenc_loc(i_gcv)) p%gcv = p%gcp/gamma
-! gcv1
-      if (lpenc_loc(i_gcv1)) then
-        do i=1,3
-          p%gcv1(:,i) = -p%gcv(:,i)*p%cv1**2
-        enddo
-      endif
-! del2cv
-      if (lpenc_loc(i_del2cv)) p%del2cv = p%del2cp/gamma
-! del2cv1
-      if (lpenc_loc(i_del2cv1)) then
-        call dot_mn(p%gcv, p%gcv, tmp1)
-        p%del2cv1 = - p%del2cv*p%cv1**2 + 2*tmp1*p%cv1**3
-      endif
-! hcv
-      if (lpenc_loc(i_hcv)) p%hcv = p%hcp/gamma
-! hcv1
-      if (lpenc_loc(i_hcv1)) then
-        do i=1,3
-          do j=1,i
-            p%hcv1(:,i,j) = - p%hcv(:,i,j)*p%cv1**2 &
-                            + 2*p%gcv(:,i)*p%gcv(:,j)*p%cv1**3
-            if (i/=j) p%hcv1(:,j,i) = p%hcv1(:,i,j)
-          enddo
-        enddo
-      endif
 !
 !  Pencils that depend on the chosen thermodynamical variables.
 !
@@ -696,33 +633,16 @@ module EquationOfState
 ! glnTT
         if (lpenc_loc(i_glnTT)) then
           do i=1,3
-            p%glnTT(:,i) =   gamma_m1*p%glnrho(:,i) &
-                           + p%cv1*p%gss(:,i) &
-                           + p%ss*p%gcv1(:,i)
+            p%glnTT(:,i)=gamma_m1*p%glnrho(:,i)+p%cv1*p%gss(:,i)
           enddo
         endif
 ! del2lnTT
-        if (lpenc_loc(i_del2lnTT)) then
-          call dot_mn(p%gss,p%gcv,tmp1)
-          call dot_mn(p%gcv,p%gcv,tmp2)
-          p%del2lnTT =   gamma_m1*p%del2lnrho &
-                       + p%cv1*p%del2ss &
-                       - p%ss*p%del2cv*p%cv1**2 &
-                       - 2*tmp1*p%cv1**2 &
-                       + 2*p%ss*tmp2*p%cv1**3
-        endif
+        if (lpenc_loc(i_del2lnTT)) p%del2lnTT=gamma_m1*p%del2lnrho+p%cv1*p%del2ss
 ! hlnTT
         if (lpenc_loc(i_hlnTT)) then
-          do i=1,3
-            do j=1,i
-              p%hlnTT(:,i,j) =   gamma_m1*p%hlnrho(:,i,j) &
-                               + p%cv1*p%hss(:,i,j) &
-                               + p%ss*p%hcv1(:,i,j) &
-                               + p%gcv1(:,i)*p%gss(:,j) &
-                               + p%gcv1(:,j)*p%gss(:,i)
-              if (i/=j) p%hlnTT(:,j,i) = p%hlnTT(:,i,j)
-            enddo
-          enddo
+          do j=1,3; do i=1,3
+            p%hlnTT(:,i,j)=gamma_m1*p%hlnrho(:,i,j)+p%cv1*p%hss(:,i,j)
+          enddo; enddo
         endif
 !
 !  Work out thermodynamic quantities for given lnrho or rho and lnTT.
