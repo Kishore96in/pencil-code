@@ -12,6 +12,7 @@
 !
 ! MVAR CONTRIBUTION 0
 ! MAUX CONTRIBUTION 4
+! COMMUNICATED AUXILIARIES 3
 !
 ! PENCILS PROVIDED ss; gss(3); ee; pp; lnTT; cs2; cp; cp1; cp1tilde
 ! PENCILS PROVIDED glnTT(3); TT; TT1; gTT(3); yH; hss(3,3); hlnTT(3,3)
@@ -105,13 +106,13 @@ module EquationOfState
 !
 !  fvap, mumol1, and cp as auxiliary variables.
 !
-      call register_report_aux('fvap',ifvap)
+      call register_report_aux('fvap',ifvap,communicated=.true.)
       call register_report_aux('mumol1',imumol1)
-      call register_report_aux('cp',icp)
+      call register_report_aux('cp',icp,communicated=.true.)
 !
 !  Also keep lnTT, mainly because its expression is so complicated that it is a pain to write out the formula for its derivatives.
 !
-      call register_report_aux('lnTT',ilnTT)
+      call register_report_aux('lnTT',ilnTT,communicated=.true.)
 !
 ! Shared variables
 !
@@ -1465,7 +1466,7 @@ module EquationOfState
 !***********************************************************************
     subroutine eos_after_boundary(f)
 !
-!     Auxiliary variables that are needed for pencil calculation. Since we need to take derivatives of these guys, make sure the ghost zones are updated as well
+!     Auxiliary variables that are needed for pencil calculation. Since we need to take derivatives of these guys, make sure the ghost zones are updated as well.
 !
 !     12-dec-2024/kishore: added
 !
@@ -1473,9 +1474,56 @@ module EquationOfState
 !
       integer :: l,m,n
 !
+!   Update ifvap, imumol1, and icp in the ghost zones (interiors were done in eos_before_boundary)
+!
+      if (lfirst_proc_x) then
+        call calc_fvap_mumol1_cp(acc=f(1:nghost,m1:m2,n1:n2,iacc), &
+                                 fvap=f(1:nghost,m1:m2,n1:n2,ifvap), &
+                                 mumol1=f(1:nghost,m1:m2,n1:n2,imumol1), &
+                                 cp=f(1:nghost,m1:m2,n1:n2,icp))
+      endif
+!
+      if (llast_proc_x) then
+        call calc_fvap_mumol1_cp(acc=f(l2+1:l2+nghost,m1:m2,n1:n2,iacc), &
+                                 fvap=f(l2+1:l2+nghost,m1:m2,n1:n2,ifvap), &
+                                 mumol1=f(l2+1:l2+nghost,m1:m2,n1:n2,imumol1), &
+                                 cp=f(l2+1:l2+nghost,m1:m2,n1:n2,icp))
+      endif
+!
+      if (lfirst_proc_y) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,1:nghost,n1:n2,iacc), &
+                                 fvap=f(l1:l2,1:nghost,n1:n2,ifvap), &
+                                 mumol1=f(l1:l2,1:nghost,n1:n2,imumol1), &
+                                 cp=f(l1:l2,1:nghost,n1:n2,icp))
+      endif
+!
+      if (llast_proc_y) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m2+1:m2+nghost,n1:n2,iacc), &
+                                 fvap=f(l1:l2,m2+1:m2+nghost,n1:n2,ifvap), &
+                                 mumol1=f(l1:l2,m2+1:m2+nghost,n1:n2,imumol1), &
+                                 cp=f(l1:l2,m2+1:m2+nghost,n1:n2,icp))
+      endif
+!
+      if (lfirst_proc_z) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,1:nghost,iacc), &
+                                 fvap=f(l1:l2,m1:m2,1:nghost,ifvap), &
+                                 mumol1=f(l1:l2,m1:m2,1:nghost,imumol1), &
+                                 cp=f(l1:l2,m1:m2,1:nghost,icp))
+      endif
+!
+      if (llast_proc_z) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n2+1:n2+nghost,iacc), &
+                                 fvap=f(l1:l2,m1:m2,n2+1:n2+nghost,ifvap), &
+                                 mumol1=f(l1:l2,m1:m2,n2+1:n2+nghost,imumol1), &
+                                 cp=f(l1:l2,m1:m2,n2+1:n2+nghost,icp))
+      endif
+!
+!     Put lnTT in the f array (interior+ghosts)
+!
       do n=1,mz; do m=1,my; do l=1,mx
         call eoscalc(ieosvars, f(l,m,n,:), lnTT=f(l,m,n,ilnTT))
       enddo; enddo; enddo
+!
     endsubroutine eos_after_boundary
 !***********************************************************************
     subroutine init_eos(f)
@@ -1501,12 +1549,25 @@ module EquationOfState
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      f(l1:l2,m1:m2,n1:n2,ifvap) = f(l1:l2,m1:m2,n1:n2,iacc)/(1+f(l1:l2,m1:m2,n1:n2,iacc))
-      f(l1:l2,m1:m2,n1:n2,imumol1) = (1-f(l1:l2,m1:m2,n1:n2,ifvap))*mudry1 &
-                                     +   f(l1:l2,m1:m2,n1:n2,ifvap)*muvap1
-      f(l1:l2,m1:m2,n1:n2,icp) = cpgas*f(l1:l2,m1:m2,n1:n2,imumol1)
+      call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n1:n2,iacc), &
+                               fvap=f(l1:l2,m1:m2,n1:n2,ifvap), &
+                               mumol1=f(l1:l2,m1:m2,n1:n2,imumol1), &
+                               cp=f(l1:l2,m1:m2,n1:n2,icp))
 !
     endsubroutine eos_update_aux
+!***********************************************************************
+    subroutine calc_fvap_mumol1_cp(acc, fvap, mumol1, cp)
+!
+!     12-dec-2024/kishore: added
+!
+      real, dimension (:,:,:), intent(in) :: acc
+      real, dimension (:,:,:), intent(out) :: fvap, mumol1, cp
+!
+      fvap = acc/(1+acc)
+      mumol1 = (1-fvap)*mudry1 + fvap*muvap1
+      cp = cpgas*mumol1
+!
+    endsubroutine calc_fvap_mumol1_cp
 !***********************************************************************
 !********************************************************************
 !********************************************************************
