@@ -1504,7 +1504,7 @@ module EquationOfState
       f(l1:l2,m1:m2,n1:n2,ifvap) = f(l1:l2,m1:m2,n1:n2,iacc)/(1+f(l1:l2,m1:m2,n1:n2,iacc))
       f(l1:l2,m1:m2,n1:n2,imumol1) = (1-f(l1:l2,m1:m2,n1:n2,ifvap))*mudry1 &
                                      +   f(l1:l2,m1:m2,n1:n2,ifvap)*muvap1
-      f(l1:l2,m1:m2,n1:n2,icp) = cpdry*mudry*f(l1:l2,m1:m2,n1:n2,imumol1)
+      f(l1:l2,m1:m2,n1:n2,icp) = cpgas*f(l1:l2,m1:m2,n1:n2,imumol1)
 !
     endsubroutine eos_update_aux
 !***********************************************************************
