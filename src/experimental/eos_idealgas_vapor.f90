@@ -1454,13 +1454,17 @@ module EquationOfState
 !
 !     Put cp in the f-array so that get_gamma_etc can be used by boundary
 !     conditions.
+!     Calculating cp requires fvap and mumol1; we then keep them in the f-array
+!     to avoid unnecessary recomputation if these are needed as pencils later on.
 !
 !     05-dec-2024/kishore: added
-!     07-dec-2024/Kishore: outsourced to eos_update_aux
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      call eos_update_aux(f)
+      call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n1:n2,iacc), &
+                               fvap=f(l1:l2,m1:m2,n1:n2,ifvap), &
+                               mumol1=f(l1:l2,m1:m2,n1:n2,imumol1), &
+                               cp=f(l1:l2,m1:m2,n1:n2,icp))
 !
     endsubroutine eos_before_boundary
 !***********************************************************************
@@ -1535,26 +1539,12 @@ module EquationOfState
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      call eos_update_aux(f)
-!
-    endsubroutine init_eos
-!***********************************************************************
-    subroutine eos_update_aux(f)
-!
-!     Subroutine get_gamma_etc requires cp to be in the f-array.
-!     Calculating cp requires fvap and mumol1; we then keep them in the f-array
-!     to avoid unnecessary recomputation if these are needed as pencils later on.
-!
-!     05-dec-2024/kishore: added
-!
-      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
-!
       call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n1:n2,iacc), &
                                fvap=f(l1:l2,m1:m2,n1:n2,ifvap), &
                                mumol1=f(l1:l2,m1:m2,n1:n2,imumol1), &
                                cp=f(l1:l2,m1:m2,n1:n2,icp))
 !
-    endsubroutine eos_update_aux
+    endsubroutine init_eos
 !***********************************************************************
     subroutine calc_fvap_mumol1_cp(acc, fvap, mumol1, cp)
 !
