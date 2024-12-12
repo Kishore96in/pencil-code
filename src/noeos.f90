@@ -1951,4 +1951,14 @@ module EquationOfState
 !
     endsubroutine eos_before_boundary
 !***********************************************************************
+    subroutine eos_after_boundary(f)
+!
+!     12-dec-2024/Kishore: added dummy routine
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      call keep_compiler_quiet(f)
+!
+    endsubroutine eos_after_boundary
+!***********************************************************************
 endmodule EquationOfState

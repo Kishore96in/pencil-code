@@ -316,6 +316,7 @@ module Equ
       if (ltestflow)              call calc_ltestflow_nonlin_terms(f,df)  ! should not use df!
       if (lmagn_mf)               call meanfield_after_boundary(f)
       if (lspecial)               call special_after_boundary(f)
+                                  call eos_after_boundary(f)
 !
 !  Calculate quantities for a chemical mixture. This is done after
 !  communication has finalized since many of the arrays set up here
