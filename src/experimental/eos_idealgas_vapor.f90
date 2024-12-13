@@ -667,7 +667,7 @@ module EquationOfState
 ! ppvap
       !if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas_unit_sys*p%cc(:,1)*p%rho*p%TT
 !       if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas_unit_sys*p%ssat*p%rho*p%TT
-      if (lpenc_loc(i_ppvap)) p%ppvap=p%fvap*mudry1*muvap1*cpdry*p%rho*p%TT
+      if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas*p%fvap*p%rho*p%TT
 ! cs2
       if (lpenc_loc(i_cs2)) p%cs2=p%cp*p%TT*gamma_m1
 ! csvap2
