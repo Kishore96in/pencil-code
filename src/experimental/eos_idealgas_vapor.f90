@@ -672,7 +672,7 @@ module EquationOfState
       if (lpenc_loc(i_cs2)) p%cs2=p%cp*p%TT*gamma_m1
 ! csvap2
       if (lpenc_loc(i_csvap2)) p%csvap2=p%cs2*p%mumol*muvap1
-! ee
+! ee (specific internal energy)
       if (lpenc_loc(i_ee)) p%ee=p%cv*exp(p%lnTT)
 ! yH
       if (lpenc_loc(i_yH)) p%yH=impossible
