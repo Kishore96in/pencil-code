@@ -9,9 +9,11 @@
 ! CPARAM logical, parameter :: leos = .true.
 ! CPARAM logical, parameter :: leos_ionization = .false., leos_temperature_ionization=.false.
 ! CPARAM logical, parameter :: leos_idealgas = .false., leos_chemistry = .false.
+! CPARAM logical, parameter :: leos_early_finalize = .true.
 !
 ! MVAR CONTRIBUTION 0
-! MAUX CONTRIBUTION 3
+! MAUX CONTRIBUTION 4
+! COMMUNICATED AUXILIARIES 3
 !
 ! PENCILS PROVIDED ss; gss(3); ee; pp; lnTT; cs2; cp; cp1; cp1tilde
 ! PENCILS PROVIDED glnTT(3); TT; TT1; gTT(3); yH; hss(3,3); hlnTT(3,3)
@@ -45,6 +47,7 @@ module EquationOfState
   real :: gamma1   !(=1/gamma)
   real :: cpdry=impossible, cpdry1=impossible
   real :: cvdry=impossible, cvdry1=impossible
+  real :: cpgas, lnmuvapbydry
   real :: cs2bot=1.0, cs2top=1.0
   integer :: imass=1
   integer :: ieosvars=-1, ieosvar1=-1, ieosvar2=-1, ieosvar_count=0
@@ -104,9 +107,13 @@ module EquationOfState
 !
 !  fvap, mumol1, and cp as auxiliary variables.
 !
-      call register_report_aux('fvap',ifvap)
+      call register_report_aux('fvap',ifvap,communicated=.true.)
       call register_report_aux('mumol1',imumol1)
-      call register_report_aux('cp',icp)
+      call register_report_aux('cp',icp,communicated=.true.)
+!
+!  Also keep lnTT, mainly because its expression is so complicated that it is a pain to write out the formula for its derivatives.
+!
+      call register_report_aux('lnTT',ilnTT,communicated=.true.)
 !
 ! Shared variables
 !
@@ -191,6 +198,8 @@ module EquationOfState
       cpdry1=1/cpdry
       cvdry=gamma1*cpdry
       cvdry1=gamma*cpdry1
+      cpgas=cpdry*mudry
+      lnmuvapbydry=log(muvap/mudry)
 !
 !  Need to calculate the equivalent of cs0.
 !  Distinguish between gamma=1 case and not.
@@ -491,24 +500,6 @@ module EquationOfState
 !  Pencils for thermodynamic quantities for given lnrho or rho and ss.
 !
       case (ilnrho_ss,irho_ss)
-        if (lpencil_in(i_lnTT)) then
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_ss)=.true.
-          lpencil_in(i_lnrho)=.true.
-        endif
-        if (lpencil_in(i_glnTT)) then
-          lpencil_in(i_glnrho)=.true.
-          lpencil_in(i_cv1)=.true.
-          lpencil_in(i_gss)=.true.
-        endif
-        if (lpencil_in(i_del2lnTT)) then
-          lpencil_in(i_del2lnrho)=.true.
-          lpencil_in(i_del2ss)=.true.
-        endif
-        if (lpencil_in(i_hlnTT)) then
-          lpencil_in(i_hlnrho)=.true.
-          lpencil_in(i_hss)=.true.
-        endif
 !
 !  Pencils for thermodynamic quantities for given lnrho or rho and lnTT.
 !
@@ -629,21 +620,14 @@ module EquationOfState
 ! del6ss
         if (lpenc_loc(i_del6ss)) call del6(f,iss,p%del6ss)
 ! lnTT
-        if (lpenc_loc(i_lnTT)) p%lnTT=lnTT0+p%cv1*p%ss+gamma_m1*(p%lnrho-lnrho0)
+!
+        if (lpenc_loc(i_lnTT)) p%lnTT=f(l1:l2,m,n,ilnTT)
 ! glnTT
-        if (lpenc_loc(i_glnTT)) then
-          do i=1,3
-            p%glnTT(:,i)=gamma_m1*p%glnrho(:,i)+p%cv1*p%gss(:,i)
-          enddo
-        endif
+        if (lpenc_loc(i_glnTT)) call grad(f,ilnTT,p%glnTT)
 ! del2lnTT
-        if (lpenc_loc(i_del2lnTT)) p%del2lnTT=gamma_m1*p%del2lnrho+p%cv1*p%del2ss
+        if (lpenc_loc(i_del2lnTT)) call del2(f,ilnTT,p%del2lnTT)
 ! hlnTT
-        if (lpenc_loc(i_hlnTT)) then
-          do j=1,3; do i=1,3
-            p%hlnTT(:,i,j)=gamma_m1*p%hlnrho(:,i,j)+p%cv1*p%hss(:,i,j)
-          enddo; enddo
-        endif
+        if (lpenc_loc(i_hlnTT)) call g2ij(f,ilnTT,p%hlnTT)
 !
 !  Work out thermodynamic quantities for given lnrho or rho and lnTT.
 !
@@ -684,12 +668,12 @@ module EquationOfState
 ! ppvap
       !if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas_unit_sys*p%cc(:,1)*p%rho*p%TT
 !       if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas_unit_sys*p%ssat*p%rho*p%TT
-      if (lpenc_loc(i_ppvap)) p%ppvap=p%fvap*mudry1*muvap1*cpdry*p%rho*p%TT
+      if (lpenc_loc(i_ppvap)) p%ppvap=muvap1*Rgas*p%fvap*p%rho*p%TT
 ! cs2
       if (lpenc_loc(i_cs2)) p%cs2=p%cp*p%TT*gamma_m1
 ! csvap2
       if (lpenc_loc(i_csvap2)) p%csvap2=p%cs2*p%mumol*muvap1
-! ee
+! ee (specific internal energy)
       if (lpenc_loc(i_ee)) p%ee=p%cv*exp(p%lnTT)
 ! yH
       if (lpenc_loc(i_yH)) p%yH=impossible
@@ -961,7 +945,7 @@ module EquationOfState
       integer, intent(in) :: ivars
       real, dimension(mfarray), intent(in) :: f
       real, optional, intent(out) :: lnrho, ss, yH, lnTT, ee, pp, cs2
-      real :: cp, cv, lnrho_, ss_, lnTT_, ee_, pp_, cs2_
+      real :: cp, cv, cv1, lnrho_, ss_, lnTT_, ee_, pp_, cs2_, fvap
 !
       if (present(yh)) call fatal_error('eoscalc_point_f','yH is not relevant for this EOS')
       if (lreference_state) call not_implemented('eoscalc_point_f', 'lreference_state=T')
@@ -978,10 +962,17 @@ module EquationOfState
         if (present(lnTT).or.present(ee).or.present(pp).or.present(cs2)) then
           cp = f(icp)
           cv = cp*gamma1
+          cv1 = 1./cv
+          fvap = f(ifvap)
 !
-!         This formula works because cp,cv are independent of rho,TT
+!         Can be derived by using the Sackur-Tetrode equation to write down the entropy of a mixture of particles of two different masses.
+!         NOTE that one does not recover the usual expression by just setting muvap=mudry; this is because we are still treating the two kinds of particles as distinguishable.
 !
-          lnTT_ = lnTT0 + ss_/cv + gamma_m1*(lnrho_-lnrho0)
+          lnTT_ =   lnTT0 + ss_*cv1 + gamma_m1*(lnrho_-lnrho0) &
+                  - cpgas*lnmuvapbydry*muvap1*cv1*fvap
+          if (fvap>0) lnTT_ = lnTT_ + Rgas*muvap1*cv1*fvap*log(fvap)
+          if (fvap<1) lnTT_ = lnTT_ + Rgas*mudry1*cv1*(1-fvap)*log(1-fvap)
+!
           if (present(lnTT)) lnTT = lnTT_
           if (present(ee)) ee = cv*exp(lnrho_+lnTT_)
           if (present(pp)) pp = (cp-cv)*exp(lnrho_+lnTT_)
@@ -1464,15 +1455,81 @@ module EquationOfState
 !
 !     Put cp in the f-array so that get_gamma_etc can be used by boundary
 !     conditions.
+!     Calculating cp requires fvap and mumol1; we then keep them in the f-array
+!     to avoid unnecessary recomputation if these are needed as pencils later on.
 !
 !     05-dec-2024/kishore: added
-!     07-dec-2024/Kishore: outsourced to eos_update_aux
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      call eos_update_aux(f)
+      call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n1:n2,iacc), &
+                               fvap=f(l1:l2,m1:m2,n1:n2,ifvap), &
+                               mumol1=f(l1:l2,m1:m2,n1:n2,imumol1), &
+                               cp=f(l1:l2,m1:m2,n1:n2,icp))
 !
     endsubroutine eos_before_boundary
+!***********************************************************************
+    subroutine eos_after_boundary(f)
+!
+!     Auxiliary variables that are needed for pencil calculation. Since we need to take derivatives of these guys, make sure the ghost zones are updated as well.
+!
+!     12-dec-2024/kishore: added
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      integer :: l,m,n
+!
+!   Update ifvap, imumol1, and icp in the ghost zones (interiors were done in eos_before_boundary)
+!
+      if (lfirst_proc_x) then
+        call calc_fvap_mumol1_cp(acc=f(1:nghost,m1:m2,n1:n2,iacc), &
+                                 fvap=f(1:nghost,m1:m2,n1:n2,ifvap), &
+                                 mumol1=f(1:nghost,m1:m2,n1:n2,imumol1), &
+                                 cp=f(1:nghost,m1:m2,n1:n2,icp))
+      endif
+!
+      if (llast_proc_x) then
+        call calc_fvap_mumol1_cp(acc=f(l2+1:l2+nghost,m1:m2,n1:n2,iacc), &
+                                 fvap=f(l2+1:l2+nghost,m1:m2,n1:n2,ifvap), &
+                                 mumol1=f(l2+1:l2+nghost,m1:m2,n1:n2,imumol1), &
+                                 cp=f(l2+1:l2+nghost,m1:m2,n1:n2,icp))
+      endif
+!
+      if (lfirst_proc_y) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,1:nghost,n1:n2,iacc), &
+                                 fvap=f(l1:l2,1:nghost,n1:n2,ifvap), &
+                                 mumol1=f(l1:l2,1:nghost,n1:n2,imumol1), &
+                                 cp=f(l1:l2,1:nghost,n1:n2,icp))
+      endif
+!
+      if (llast_proc_y) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m2+1:m2+nghost,n1:n2,iacc), &
+                                 fvap=f(l1:l2,m2+1:m2+nghost,n1:n2,ifvap), &
+                                 mumol1=f(l1:l2,m2+1:m2+nghost,n1:n2,imumol1), &
+                                 cp=f(l1:l2,m2+1:m2+nghost,n1:n2,icp))
+      endif
+!
+      if (lfirst_proc_z) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,1:nghost,iacc), &
+                                 fvap=f(l1:l2,m1:m2,1:nghost,ifvap), &
+                                 mumol1=f(l1:l2,m1:m2,1:nghost,imumol1), &
+                                 cp=f(l1:l2,m1:m2,1:nghost,icp))
+      endif
+!
+      if (llast_proc_z) then
+        call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n2+1:n2+nghost,iacc), &
+                                 fvap=f(l1:l2,m1:m2,n2+1:n2+nghost,ifvap), &
+                                 mumol1=f(l1:l2,m1:m2,n2+1:n2+nghost,imumol1), &
+                                 cp=f(l1:l2,m1:m2,n2+1:n2+nghost,icp))
+      endif
+!
+!     Put lnTT in the f array (interior+ghosts)
+!
+      do n=1,mz; do m=1,my; do l=1,mx
+        call eoscalc(ieosvars, f(l,m,n,:), lnTT=f(l,m,n,ilnTT))
+      enddo; enddo; enddo
+!
+    endsubroutine eos_after_boundary
 !***********************************************************************
     subroutine init_eos(f)
 !
@@ -1483,26 +1540,25 @@ module EquationOfState
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      call eos_update_aux(f)
+      call calc_fvap_mumol1_cp(acc=f(l1:l2,m1:m2,n1:n2,iacc), &
+                               fvap=f(l1:l2,m1:m2,n1:n2,ifvap), &
+                               mumol1=f(l1:l2,m1:m2,n1:n2,imumol1), &
+                               cp=f(l1:l2,m1:m2,n1:n2,icp))
 !
     endsubroutine init_eos
 !***********************************************************************
-    subroutine eos_update_aux(f)
+    subroutine calc_fvap_mumol1_cp(acc, fvap, mumol1, cp)
 !
-!     Subroutine get_gamma_etc requires cp to be in the f-array.
-!     Calculating cp requires fvap and mumol1; we then keep them in the f-array
-!     to avoid unnecessary recomputation if these are needed as pencils later on.
+!     12-dec-2024/kishore: added
 !
-!     05-dec-2024/kishore: added
+      real, dimension (:,:,:), intent(in) :: acc
+      real, dimension (:,:,:), intent(out) :: fvap, mumol1, cp
 !
-      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+      fvap = acc/(1+acc)
+      mumol1 = (1-fvap)*mudry1 + fvap*muvap1
+      cp = cpgas*mumol1
 !
-      f(l1:l2,m1:m2,n1:n2,ifvap) = f(l1:l2,m1:m2,n1:n2,iacc)/(1+f(l1:l2,m1:m2,n1:n2,iacc))
-      f(l1:l2,m1:m2,n1:n2,imumol1) = (1-f(l1:l2,m1:m2,n1:n2,ifvap))*mudry1 &
-                                     +   f(l1:l2,m1:m2,n1:n2,ifvap)*muvap1
-      f(l1:l2,m1:m2,n1:n2,icp) = cpdry*mudry*f(l1:l2,m1:m2,n1:n2,imumol1)
-!
-    endsubroutine eos_update_aux
+    endsubroutine calc_fvap_mumol1_cp
 !***********************************************************************
 !********************************************************************
 !********************************************************************

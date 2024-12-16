@@ -8,6 +8,7 @@
 !
 ! CPARAM logical, parameter :: leos = .false., leos_ionization=.false., leos_temperature_ionization=.false.
 ! CPARAM logical, parameter :: leos_idealgas = .false., leos_chemistry = .false.
+! CPARAM logical, parameter :: leos_early_finalize = .false.
 !
 ! MVAR CONTRIBUTION 0
 ! MAUX CONTRIBUTION 0
@@ -1950,5 +1951,15 @@ module EquationOfState
       call keep_compiler_quiet(f)
 !
     endsubroutine eos_before_boundary
+!***********************************************************************
+    subroutine eos_after_boundary(f)
+!
+!     12-dec-2024/Kishore: added dummy routine
+!
+      real, dimension (mx,my,mz,mfarray), intent(inout) :: f
+!
+      call keep_compiler_quiet(f)
+!
+    endsubroutine eos_after_boundary
 !***********************************************************************
 endmodule EquationOfState
