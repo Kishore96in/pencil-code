@@ -144,7 +144,7 @@ module Equ
 !  This could in principle be avoided (but it not worth it now)
 !
       early_finalize=test_nonblocking.or. &
-                     leos_ionization.or.lradiation_ray.or. &
+                     leos_early_finalize.or.lradiation_ray.or. &
                      lhyperviscosity_strict.or.lhyperresistivity_strict.or. &
                      ltestscalar.or.ltestfield.or.ltestflow.or. &
                      lparticles_spin.or.lsolid_cells.or. &

@@ -8,6 +8,7 @@
 !
 ! CPARAM logical, parameter :: leos = .true., leos_ionization=.false., leos_fixed_ionization=.false., leos_temperature_ionization=.false.
 ! CPARAM logical, parameter :: leos_idealgas = .true., leos_chemistry = .false.
+! CPARAM logical, parameter :: leos_early_finalize = .false.
 !
 ! MVAR CONTRIBUTION 0
 !
