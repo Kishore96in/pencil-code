@@ -124,11 +124,17 @@ class Power(object):
             file_names = os.listdir(datadir)
 
         for file_name in file_names:
-            if file_name[:5] == "power" and file_name[-4:] == ".dat":
+            if "power" in file_name and file_name[-4:] == ".dat":
                 if file_name[:6] == "power_":
                     key_name = file_name.split(".")[0][6:]
-                else:
+                elif file_name[:10] == "cyl_power_":
+                    key_name = file_name.split(".")[0][10:] + "_cyl"
+                elif file_name[:9] == "cyl_power":
+                    key_name = file_name.split(".")[0][9:] + "_cyl"
+                elif file_name[:5] == "power":
                     key_name = file_name.split(".")[0][5:]
+                else:
+                    raise ValueError(f"Unsure how to handle {file_name}")
 
                 power_list.append(key_name)
                 if not quiet: print("appending", key_name)
@@ -149,6 +155,8 @@ class Power(object):
                 self._read_power_1d(power_name, file_name, datadir)
             elif file_name == "power_krms.dat":
                 self._read_power_krms(power_name, file_name, datadir)
+            elif "cyl_power" in file_name:
+                self._read_power_cyl(power_name, file_name, datadir)
             else:
                 self._read_power(power_name, file_name, datadir)
         if time_range:
@@ -365,6 +373,34 @@ class Power(object):
         power_array = (
             np.array(power_array)
             .reshape([len(time), nk])
+            .astype(np.float32)
+        )
+        self.t = time.astype(np.float32)
+        setattr(self, power_name, power_array)
+
+    def _read_power_cyl(self, power_name, file_name, datadir):
+        """
+        Handles output of power subroutine when lcylindrical_spectra=T
+        """
+        nk = self._get_nk_xyz(datadir)
+        dim = read.dim(datadir=datadir)
+        block_size = np.ceil(nk*dim.nzgrid/8) + 1
+
+        time = []
+        power_array = []
+        with open(os.path.join(datadir, file_name), "r") as f:
+            for line_idx, line in enumerate(f):
+                if line_idx % block_size == 0:
+                    time.append(float(line.strip()))
+                else:
+                    for value_string in line.strip().split():
+                        power_array.append(ffloat(value_string))
+
+        # Reformat into arrays.
+        time = np.array(time)
+        power_array = (
+            np.array(power_array)
+            .reshape([len(time), dim.nzgrid, nk])
             .astype(np.float32)
         )
         self.t = time.astype(np.float32)
