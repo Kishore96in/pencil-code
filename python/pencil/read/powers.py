@@ -116,29 +116,23 @@ class Power(object):
             if not quiet:
                 print("Reading only ", file_name)
 
-            if os.path.isfile(os.path.join(datadir, file_name)):
-                if file_name[:5] == "power" and file_name[-4:] == ".dat":
-                    if file_name[:6] == "power_":
-                        power_list.append(file_name.split(".")[0][6:])
-                        if not quiet:
-                            print("appending", file_name.split(".")[0][6:])
-                    else:
-                        power_list.append(file_name.split(".")[0][5:])
-                        if not quiet:
-                            print("appending", file_name.split(".")[0][5:])
-
-                    file_list.append(file_name)
-            else:
+            if not os.path.isfile(os.path.join(datadir, file_name)):
                 raise ValueError(f"File {file_name} does not exist.")
 
+            file_names = [file_name]
         else:
-            for file_name in os.listdir(datadir):
-                if file_name[:5] == "power" and file_name[-4:] == ".dat":
-                    if file_name[:6] == "power_":
-                        power_list.append(file_name.split(".")[0][6:])
-                    else:
-                        power_list.append(file_name.split(".")[0][5:])
-                    file_list.append(file_name)
+            file_names = os.listdir(datadir)
+
+        for file_name in file_names:
+            if file_name[:5] == "power" and file_name[-4:] == ".dat":
+                if file_name[:6] == "power_":
+                    key_name = file_name.split(".")[0][6:]
+                else:
+                    key_name = file_name.split(".")[0][5:]
+
+                power_list.append(key_name)
+                if not quiet: print("appending", key_name)
+                file_list.append(file_name)
 
         # Read the power spectra.
         for power_name, file_name in zip(power_list, file_list):
