@@ -82,13 +82,8 @@ class SinglePrinter:
             from mpi4py import MPI
             comm = MPI.COMM_WORLD
             rank = comm.Get_rank()
-            size = comm.Get_size()
-            l_mpi = (self.size != 1)
         except ImportError:
             rank = 0
-            size = 1
-            comm = None
-            l_mpi = False
         
         if (rank == 0):
             self.print = True
