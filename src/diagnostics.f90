@@ -947,8 +947,7 @@ module Diagnostics
 !
       use General, only: itoa
 !
-      real, dimension(nz,nprocz,nnamez) :: fsumz
-      real, dimension(nz,nprocz) :: fmaxz
+      real, dimension(nz,nprocz) :: fsumz, fmaxz
       integer, dimension(nz) :: nsum, ncount
       integer :: idiag
 !
@@ -988,8 +987,8 @@ module Diagnostics
         do idiag=1,nnamez
           select case(itype_name_z(idiag))
           case(ilabel_sum)
-            call mpireduce_sum(fnamez,fsumz,(/nz,nprocz,nnamez/))
-            if (lroot) fnamez(:,:,idiag)=fsumz(:,:,idiag)*dA_xy_rel1
+            call mpireduce_sum(fnamez(:,:,idiag),fsumz,(/nz,nprocz/))
+            if (lroot) fnamez(:,:,idiag)=fsumz*dA_xy_rel1
           case(ilabel_max,ilabel_max_dt)
             call mpireduce_max(fnamez(:,:,idiag),fmaxz,(/nz,nprocz/))
             if (lroot) fnamez(:,:,idiag)=fmaxz(:,:)
