@@ -34,3 +34,8 @@ with open(f'{__file__[:-3]}.out', 'w') as f:
         f.write(f' {a:g}')
     f.write('\n')
 
+    f.write('av.xy.dtvmaxz[2,-4:] :')
+    for a in av.xy.dtvmaxz[2,-4:]:
+        f.write(f' {a:g}')
+    f.write('\n')
+
