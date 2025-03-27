@@ -477,6 +477,7 @@ module Cdata
   integer, parameter :: mname=100
   real, dimension (mname) :: fweight=0.0
   integer, dimension(:)   , allocatable :: itype_name
+  integer, dimension(:)   , allocatable :: itype_name_z
   real, dimension(:)      , allocatable, target :: fname,fname_keep
   real, dimension(:,:)    , allocatable, target :: fnamer,fname_sound
   real, dimension(:,:,:)  , allocatable, target :: fnamex, fnamey, fnamez, fnamexy, fnamexz
@@ -583,6 +584,7 @@ module Cdata
   integer :: idiag_Rmesh3=0     ! DIAG_DOC: $R_{\rm mesh}^{(3)}$
   integer :: idiag_maxadvec=0   ! DIAG_DOC: maxadvec
   integer :: idiag_eps_rkf=0    ! DIAG_DOC: time step accuracy threshold
+  integer :: idiag_dtvmaxz=0       ! XYAVG_DOC: z-dependent version of dtv
 !
 !  Emergency brake:
 !   When toggled the code will stop at the next convenient point
