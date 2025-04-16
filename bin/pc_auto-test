@@ -54,7 +54,6 @@ use POSIX qw(floor strftime);
 use Getopt::Long;
 use vars qw{ %failed $test_status }; # do we really need global vars here?
 use IPC::Open2;
-use Cwd qw(abs_path);
 
 # ---------------------------------------------------------------------- #
 # Test the following subdirs of samples/ .
