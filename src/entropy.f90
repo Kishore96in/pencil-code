@@ -2929,19 +2929,33 @@ module Energy
         lpenc_requested(i_TT1)=.true.
         lpenc_requested(i_rho1)=.true.
       endif
-      if (cool/=0.0 .or. cool_ext/=0.0 .or. cool_int/=0.0) then
-        lpenc_requested(i_cs2)=.true.
-        if (cooltype=='rho_cs2') lpenc_requested(i_rho)=.true.
-        if (cooltype=='pressure') lpenc_requested(i_pp)=.true.
-        if (cooltype=='two-layer') lpenc_requested(i_rho)=.true.
-        if (cooltype=='square-well') lpenc_requested(i_rho)=.true.
-        if (cooltype=='corona') then
+!
+      if (cool/=0.0 .or. cool_ext/=0.0 .or. cool_int/=0.0 .or. luminosity/=0.0) then
+        if (cooltype=='Lambda-constant') then
+          lpenc_requested(i_rho)=.true.
+        elseif (cooltype=='corona') then
+          lpenc_requested(i_TT)=.true.
           lpenc_requested(i_cv)=.true.
           lpenc_requested(i_rho)=.true.
+        elseif (cooltype=='rho_cs2' &
+          .or. cooltype=='two-layer' &
+          .or. cooltype=='square-well' &
+          .or. cooltype=='two-layer-mean') then
+          lpenc_requested(i_cs2)=.true.
+          lpenc_requested(i_rho)=.true.
+        elseif (cooltype=='cs2-rho'.or.cooltype=='Temp-rho') then
+          lpenc_requested(i_cs2)=.true.
+          lpenc_requested(i_rho1)=.true.
+        elseif (cooltype=='entropy') then
+          lpenc_requested(i_ss)=.true.
+        elseif (cooltype=='pressure'.or.cooling_profile=='surface_pp') then
+          lpenc_requested(i_cs2)=.true.
+          lpenc_requested(i_pp)=.true.
+        else
+          lpenc_requested(i_cs2)=.true.
         endif
-        if (cooling_profile=='surface_pp') lpenc_requested(i_pp)=.true.
       endif
-      if (lgravz .and. (luminosity/=0.0 .or. cool/=0.0)) lpenc_requested(i_cs2)=.true.
+!
       if (luminosity/=0 .or. cool/=0 .or. tau_cor/=0 .or. &
           tauheat_buffer/=0 .or. heat_uniform/=0 .or. &
           cool_uniform/=0 .or. cool_newton/=0 .or. &
@@ -2951,6 +2965,7 @@ module Energy
         lpenc_requested(i_rho1)=.true.
         lpenc_requested(i_TT1)=.true.
       endif
+!
       if (pretend_lnTT) then
         lpenc_requested(i_uglnTT)=.true.
         lpenc_requested(i_divu)=.true.
@@ -3564,6 +3579,7 @@ module Energy
         endif
 !
 !  Velocity damping in the coronal heating zone.
+!  NOTE: same functionality as uuprof='damp_corona' in hydro.f90
 !
         if (tau_cor>0) then
           ztop=xyz0(3)+Lxyz(3)
