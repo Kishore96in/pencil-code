@@ -3,30 +3,7 @@
 Contains the perticle dimension class and its reading routine.
 """
 
-
-def pdim(*args, **kwargs):
-    """
-    pdim(datadir='data')
-
-    Read the pdim.dat file.
-
-    Parameters
-    ----------
-    sim : obj
-        Specifies the simulation oject from which to obtain the datadir.
-
-    datadir : string
-        Directory where the data is stored.
-
-    Returns
-    -------
-    Object containing the particle dimensions.
-    """
-
-    pdim_tmp = PDim()
-    pdim_tmp.read(*args, **kwargs)
-    return pdim_tmp
-
+from pencil.util import copy_docstring
 
 class PDim(object):
     """
@@ -49,12 +26,15 @@ class PDim(object):
 
     def read(self, datadir="data"):
         """
-        read(pdim(sim=None, datadir='data')
+        read(sim=None, datadir='data')
 
         Read the pdim.dat file.
 
         Parameters
         ----------
+        sim : obj
+            Specifies the simulation object from which to obtain the datadir.
+        
         datadir : string
             Directory where the data is stored.
 
@@ -87,3 +67,9 @@ class PDim(object):
         self.mpvar = mpvar
         self.npar_stalk = npar_stalk
         self.mpaux = mpaux
+
+@copy_docstring(PDim.read)
+def pdim(*args, **kwargs):
+    pdim_tmp = PDim()
+    pdim_tmp.read(*args, **kwargs)
+    return pdim_tmp
