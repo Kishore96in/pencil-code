@@ -944,6 +944,7 @@ module Diagnostics
 !MR: but wastes storage in fnamez
 !
 !   6-jun-02/axel: coded
+!   27-mar-2025/Kishore: handling of itype_name_z
 !
       use General, only: itoa
 !
