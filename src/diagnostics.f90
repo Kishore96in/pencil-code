@@ -994,7 +994,8 @@ module Diagnostics
             if (lroot) fnamez(:,:,idiag)=fmaxz(:,:)
           case default
             call fatal_error('xyaverages_z', 'itype_name_z has an unhandled value '// &
-            trim(itoa(itype_name_z(idiag)))//' at idiag='//trim(itoa(idiag)))
+            trim(itoa(itype_name_z(idiag)))//' at idiag='//trim(itoa(idiag))// &
+            ' (cnamez='//trim(cnamez(idiag))//')')
           endselect
         enddo
       endif
