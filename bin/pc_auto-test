@@ -1130,15 +1130,13 @@ sub test_timelimited_perl_cmd {
 # ($error_count, $message).
 # Return error message.
     my $cmd   = shift;
-    my $time_limit_str   = shift;
+    my $time_limit   = shift;
     my $dir   = (shift || "<Unknown directory>");
     my $phase = (shift || "<Unknown phase>");
     my $quiet = (shift || 0);   # flag for suppressing the 'ok'
     my $t_ref = shift;
 
     print STDERR "\nRunning Perl command\n" if ($debug);
-
-    my $time_limit = $time_limit_str;
 
     my ($error_count, $res) = (0, '');
     eval {
