@@ -503,7 +503,7 @@ if ($timeout_command_found && !$nolock) {
     $local_lock = 1;
 }
 
-if ($time_limit) {
+if ($time_limit && !Scalar::Util::looks_like_number($time_limit)) {
     my $parsed_time_limit = eval {Test::Parse::parse_time($time_limit)};
     if ($@) {
         $failed++;
