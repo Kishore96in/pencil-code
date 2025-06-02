@@ -1087,16 +1087,14 @@ sub test_timelimited_shell_cmd {
 # Test shell command, but run it through reaper to limit total time it is
 # allowed to take
     my $cmd      = shift;
-    my $maxtime  = shift;
+    my $time_limit  = shift;
     my $procname = shift;
     my @rest = @_;
-
-    my $time_limit = $maxtime;
 
     if ($timeout_command_found) {
         return test_shell_cmd("timeout -v --kill-after=10s --preserve-status $time_limit $cmd", @rest);
     } else {
-        return test_shell_cmd("reaper -t '$maxtime,$procname' '$cmd'", @rest);
+        return test_shell_cmd("reaper -t '$time_limit,$procname' '$cmd'", @rest);
     }
 }
 # ---------------------------------------------------------------------- #
