@@ -503,6 +503,17 @@ if ($timeout_command_found && !$nolock) {
     $local_lock = 1;
 }
 
+if ($time_limit) {
+    my $parsed_time_limit = eval {Test::Parse::parse_time($time_limit)};
+    if ($@) {
+        $failed++;
+        $failure_message = "time limit: $@";
+        exit;
+    } else {
+        $time_limit = $parsed_time_limit
+    }
+}
+
 if ($local_lock) { $lockdir = $pencil_home; }
 $lockfile = $lockdir."/pencil-auto-test-$user.pid";
 
@@ -1082,14 +1093,7 @@ sub test_timelimited_shell_cmd {
     my $procname = shift;
     my @rest = @_;
 
-    my $time_limit;
-    if (Scalar::Util::looks_like_number($maxtime)) {
-        $time_limit = $maxtime;
-    } else {
-        #$failed++; #dirty hack to make sure an exception in the line below is detected as a failing test.
-        $time_limit = Test::Parse::parse_time($maxtime);
-        #$failed--;
-    }
+    my $time_limit = $maxtime;
 
     if ($timeout_command_found) {
         return test_shell_cmd("timeout -v --kill-after=10s --preserve-status $time_limit $cmd", @rest);
@@ -1136,12 +1140,7 @@ sub test_timelimited_perl_cmd {
 
     print STDERR "\nRunning Perl command\n" if ($debug);
 
-    my $time_limit;
-    if (Scalar::Util::looks_like_number($time_limit_str)) {
-        $time_limit = $time_limit_str;
-    } else {
-        $time_limit = Test::Parse::parse_time($time_limit_str);
-    }
+    my $time_limit = $time_limit_str;
 
     my ($error_count, $res) = (0, '');
     eval {
