@@ -1,4 +1,9 @@
 import numpy as np
+import os
+from scipy.io import FortranFile
+from os.path import expanduser, isdir, join
+from pencil import read
+from pencil.math import is_number
 
 def pvar(*args, **kwargs):
     """
@@ -122,7 +127,7 @@ class ParticleData(object):
         pvarfile="",
         datadir="data",
         proc=-1,
-        proclist=0,
+        proclist=None,
         ipvar=-1,
         quiet=True,
         pflist=None,
@@ -198,11 +203,6 @@ class ParticleData(object):
         >>> print(pvar.pvx.shape)
         """
 
-        from os.path import expanduser, isdir, join
-        from scipy.io import FortranFile
-        from pencil import read
-        from pencil.math import is_number
-
         if sim is None:
             datadir = expanduser(datadir)
             dim = read.dim(datadir, proc=proc)
@@ -244,6 +244,7 @@ class ParticleData(object):
             pvarfile = "P" + varfile
         if len(pvarfile)==0:
             pvarfile = "pvar.dat"
+
         if param.io_strategy == "HDF5":
             import h5py
             pvarfile = str.strip(pvarfile, ".dat") + ".h5"
@@ -251,94 +252,9 @@ class ParticleData(object):
                 for key in hf["part"].keys():
                     if key in pfkeys.keys():
                         setattr(self, key.lower(), hf["part"][key][()])
-        #
         else:
-            if dim.precision == "D":
-                read_precision = "d"
-            else:
-                read_precision = "f"
+            self._read_pvar_nonhdf5(dim, pdim, param, proclist, proc, datadir, npvar, dtype, ID, pvarfile, pfkeys)
 
-            if isinstance(proclist, list):
-                proc = 0
-            if proc < 0:
-                proc_dirs = self.__natural_sort(
-                    filter(lambda s: s.startswith("proc"), os.listdir(datadir))
-                )
-                if proc_dirs.count("proc_bounds.dat") > 0:
-                    proc_dirs.remove("proc_bounds.dat")
-                if param.lcollective_io:
-                    # A collective IO strategy is being used
-                    proc_dirs = ["allprocs"]
-            #                else:
-            #                    proc_dirs = proc_dirs[::dim.nprocx*dim.nprocy]
-                ptmp=np.zeros((npvar,pdim.npar), dtype=dtype)
-                if ID:
-                    idtmp=np.zeros((pdim.npar), dtype=dtype)
-
-                ind0, ind1 = 0, 0
-                for directory in proc_dirs:
-                    file_name = join(datadir, directory, pvarfile)
-                    # Read the data.
-                    infile = FortranFile(file_name)
-                    ind1 = infile.read_record(dtype='i')[0]
-                    tmp = infile.read_record(dtype='i')
-                    if ID:
-                        idtmp[ind0:ind0+ind1] = tmp
-                    tmp = dtype(infile.read_record(dtype=read_precision))
-                    tmp = tmp.reshape((pdim.mpvar,ind1))
-                    for idx, key in zip(range(npvar),pfkeys.keys()):
-                        ptmp[idx, ind0:ind0+ind1] = tmp[pfkeys[key]-1]
-                    ind0 += ind1
-                    infile.close()
-            elif isinstance(proclist, list):
-                ind1 = 0
-                proc_dirs = list()
-                for idir in proclist:
-                    if isdir(join(datadir, "proc"+str(idir))):
-                        proc_dirs.append("proc" + str(idir))
-                        file_name = join(datadir,"proc"+str(idir), pvarfile)
-                        infile = FortranFile(file_name)
-                        ind1 += infile.read_record(dtype='i')[0]
-                        infile.close()
-                    else:
-                        print("{} is not a valid proc directory".format(idir))
-                ptmp=np.zeros((npvar,ind1), dtype=dtype)
-                if ID:
-                    idtmp=np.zeros((ind1), dtype=dtype)
-
-                ind0, ind1 = 0, 0
-                for directory in proc_dirs:
-                    file_name = join(datadir, directory, pvarfile)
-                    # Read the data.
-                    infile = FortranFile(file_name)
-                    ind1 = infile.read_record(dtype='i')[0]
-                    tmp = infile.read_record(dtype='i')
-                    if ID:
-                        idtmp[ind0:ind0+ind1] = tmp
-                    tmp = dtype(infile.read_record(dtype=read_precision))
-                    tmp = tmp.reshape((pdim.mpvar,ind1))
-                    for idx, key in zip(range(npvar),pfkeys.keys()):
-                        ptmp[idx, ind0:ind0+ind1] = tmp[pfkeys[key]-1]
-                    ind0 += ind1
-                    infile.close()
-            else:
-                file_name = join(datadir, "proc" + str(proc), pvarfile)
-                infile = FortranFile(file_name)
-                ind1 = infile.read_record(dtype='i')
-                tmp = infile.read_record(dtype='i')
-                if ID:
-                    idtmp = tmp
-                tmp = dtype(infile.read_record(dtype=read_precision))
-                tmp = tmp.reshape((pdim.mpvar,ind1))
-                infile.close()
-                for idx, key in zip(range(npvar),pfkeys.keys()):
-                    ptmp[idx] = tmp[pfkeys[key]-1]
-
-            for idx, key in zip(range(npvar),pfkeys.keys()):
-                if "ID" in key:
-                    setattr(self, key.lower(), idtmp)
-                else:
-                    setattr(self, key.lower(), ptmp[idx])
         try:
             #Position vector
             setattr(self, "xxp", np.array([self.xp, self.yp, self.zp]))
@@ -377,3 +293,77 @@ class ParticleData(object):
         convert = lambda text: int(text) if text.isdigit() else text.lower()
         alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
         return sorted(procs_list, key=alphanum_key)
+
+    def _read_singleproc_dat(self, file_name, output_dtype, read_precision, mpvar, mpaux):
+        """
+        Note that at least with io_dist, all the particle variables (including
+        aux) are written out into the snapshots (see
+        io_dist.f90/output_part_snap).
+
+        Kishore: I am not sure if the auxiliary variables should be kept in the
+        Kishore: snapshot; Fred's earlier implementation seemed to assume the
+        Kishore: auxiliary variables are not in the snapshot.
+        """
+        with FortranFile(file_name) as infile:
+            ind1 = infile.read_record(dtype='i')[0]
+            ids = infile.read_record(dtype='i')
+            data = output_dtype(infile.read_record(dtype=read_precision))
+            data = data.reshape((mpvar+mpaux,ind1))
+            return ids, data, ind1
+
+    def _read_pvar_nonhdf5(self, dim, pdim, param, proclist, proc, datadir, npvar, dtype, ID, pvarfile, pfkeys):
+        if dim.precision == "D":
+            read_precision = "d"
+        else:
+            read_precision = "f"
+
+        if isinstance(proclist, list):
+            ind1 = 0
+            proc_dirs = list()
+            for idir in proclist:
+                if isdir(join(datadir, "proc"+str(idir))):
+                    proc_dirs.append("proc" + str(idir))
+                    file_name = join(datadir,"proc"+str(idir), pvarfile)
+                    infile = FortranFile(file_name)
+                    ind1 += infile.read_record(dtype='i')[0]
+                    infile.close()
+                else:
+                    raise ValueError(f"{idir} is not a valid proc directory")
+            npar = ind1
+        elif proc < 0:
+            proc_dirs = self.__natural_sort(
+                filter(lambda s: s.startswith("proc"), os.listdir(datadir))
+            )
+            if proc_dirs.count("proc_bounds.dat") > 0:
+                proc_dirs.remove("proc_bounds.dat")
+            if param.lcollective_io:
+                proc_dirs = ["allprocs"]
+            npar = pdim.npar
+
+        if proc_dirs is not None:
+            ptmp=np.zeros((npvar,npar), dtype=dtype)
+            if ID:
+                idtmp=np.zeros((npar), dtype=dtype)
+
+            ind0 = 0
+            for directory in proc_dirs:
+                file_name = join(datadir, directory, pvarfile)
+                ids, data, ind1 = self._read_singleproc_dat(file_name, dtype, read_precision, pdim.mpvar, pdim.mpaux)
+                if ID:
+                    idtmp[ind0:ind0+ind1] = ids
+                for idx, key in zip(range(npvar),pfkeys.keys()):
+                    ptmp[idx, ind0:ind0+ind1] = data[pfkeys[key]-1]
+                ind0 += ind1
+        else:
+            file_name = join(datadir, "proc" + str(proc), pvarfile)
+            ids, data, _ = self._read_singleproc_dat(file_name, dtype, read_precision, pdim.mpvar, pdim.mpaux)
+            if ID:
+                idtmp = ids
+            for idx, key in zip(range(npvar),pfkeys.keys()):
+                ptmp[idx] = data[pfkeys[key]-1]
+
+        for idx, key in zip(range(npvar),pfkeys.keys()):
+            if "ID" in key:
+                setattr(self, key.lower(), idtmp)
+            else:
+                setattr(self, key.lower(), ptmp[idx])
