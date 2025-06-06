@@ -9,7 +9,7 @@ module HDF5_IO
   use Cdata
   use General, only: loptest, itoa, numeric_precision, keep_compiler_quiet
   use HDF5
-  use Messages, only: fatal_error, warning
+  use Messages, only: fatal_error, warning, not_implemented
   use Mpicomm, only: lroot, mpiscan_int, mpibcast_int
 !
   implicit none
@@ -252,6 +252,13 @@ module HDF5_IO
       current = trim (file)
 !
       if (lcollective) then
+        if (.not.lmpicomm) then
+          ! If using nompicomm, calling functions like h5pcreate_f leads to the
+          ! following error: "The MPI_Comm_f2c() function was called before
+          ! MPI_INIT was invoked".
+          call not_implemented('file_open_hdf5', 'with lcollective=T and lmpicomm=F')
+        endif
+        !
         ! setup file access property list
         call h5pcreate_f (H5P_FILE_ACCESS_F, h5_plist, h5_err)
         call check_error (h5_err, 'create global file access property list', caller='file_open_hdf5')
