@@ -25,7 +25,7 @@ class Av(pc.read.averages.Averages):
                     To be consistent with what happens with io_dist.
                     Axis ordering is now [t,x,z] for yaver, or [t,x,y] for zaver.
                     """
-                    setattr(plane, k, val.swapaxes(2,3))
+                    setattr(plane, k, val.swapaxes(1,2))
         return t, plane
 
 sim = pc.sim.get(path="..", quiet=True)
