@@ -14,9 +14,23 @@ matplotlib.use('agg')
 import numpy as np
 import pencil as pc
 
-sim = pc.sim.get(path="..", quiet=True)
+class Av(pc.read.averages.Averages):
+    def _read_h5_aver(self, *args, **kwargs):
+        t, plane = super()._read_h5_aver(*args, **kwargs)
+        for k in plane.__dict__.keys():
+            if k != "t":
+                val = getattr(plane, k)
+                if val.ndim == 3:
+                    """
+                    To be consistent with what happens with io_dist.
+                    Axis ordering is now [t,x,z] for yaver, or [t,x,y] for zaver.
+                    """
+                    setattr(plane, k, val.swapaxes(2,3))
+        return t, plane
 
-av = pc.read.aver(
+sim = pc.sim.get(path="..", quiet=True)
+av = Av()
+av.read(
     datadir=sim.datadir,
     simdir=sim.path,
     plane_list=['y'],
