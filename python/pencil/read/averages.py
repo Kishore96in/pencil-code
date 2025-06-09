@@ -252,7 +252,7 @@ class Averages(object):
                             if var in plane_var_names:
                                 var_index.append(indx)
                 if plane == "xy" or plane == "xz" or plane == "yz":
-                    t, raw_data = self._read_2d_aver(
+                    t, raw_data = self.__read_2d_aver(
                         plane,
                         datadir,
                         aver_file_name,
@@ -266,7 +266,7 @@ class Averages(object):
                         precision=precision,
                     )
                 elif plane == "y" or plane == "z" or plane == "phi":
-                    t, raw_data = self._read_1d_aver(
+                    t, raw_data = self.__read_1d_aver(
                         plane,
                         datadir,
                         aver_file_name,
@@ -386,7 +386,7 @@ class Averages(object):
         """
         Determine if string is equal new line.
         """
-        #Kishore (2025-06-09): this no longer seems to be used (TODO)
+
         return line == "\n"
 
     def __read_h5_aver(
@@ -511,7 +511,7 @@ class Averages(object):
 
         return t, ext_object
 
-    def _read_1d_aver(
+    def __read_1d_aver(
         self,
         plane,
         datadir,
@@ -688,7 +688,7 @@ class Averages(object):
 
         return t, raw_data
 
-    def _read_2d_aver(
+    def __read_2d_aver(
         self,
         plane,
         datadir,
@@ -708,7 +708,7 @@ class Averages(object):
         """
 
         if time_range is not None:
-            warnings.warn("Averages._read_2d_aver: time_range is not implemented")
+            warnings.warn("Averages.__read_2d_aver: time_range is not implemented")
 
         # Determine the structure of the xy/xz/yz averages.
         if plane == "xy":
