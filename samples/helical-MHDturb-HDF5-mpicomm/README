@@ -7,7 +7,7 @@ Maintainer:
 Added:
     04-Jun-2025
 Status:
-    failing # One of [succeeds|failing since <date>|obsolete| ...]
+    succeeds # One of [succeeds|failing since <date>|obsolete| ...]
 Comments:
     Identical to helical-MHDTurb, except that io_hdf5 is used (and we use
     mpicomm since nompicomm does not work with hdf5_io_parallel). The purpose
