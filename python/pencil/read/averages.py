@@ -128,7 +128,7 @@ class Averages(object):
         Examples
         --------
         >>> aver = pc.read.aver()
-        >>> avr.lnrho.shape
+        >>> aver.lnrho.shape
         (134, 134, 134)
 
         Notes
