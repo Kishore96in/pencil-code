@@ -17,5 +17,5 @@ Comments:
     transposed (x-z) as compared to the io_dist ones: with HDF5, the axis
     ordering of yaver is [t,z,x]; while without HDF5, it is [t,x,z].
     
-    I have also removed the lzero_spec_zerok to get the sample to work on my
-    somewhat older development branch.
+    I have also removed the lzero_spec_zerok option from power_spectrum_run_pars
+    to get the sample to work on my somewhat older development branch.
