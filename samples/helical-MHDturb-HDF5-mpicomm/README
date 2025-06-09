@@ -15,4 +15,8 @@ Comments:
     I have also removed the lzero_spec_zerok to get the sample to work on my somewhat older development branch.
     
     For unknown reasons, the 2D averages (yaver and zaver) do not match those in the helical-MHDTurb sample. The current reference data are the same as in the standard (nohdf5, nompicomm) sample, and thus this test currently fails (running script tests).
-    Note that the output for io_dist+mpicomm are the same as io_dist+nompicomm, so it looks like the introduction of HDF5 is somehow changing the results (but only of the 2D (yaver, zaver) averages).
+    Notes
+        The outputs for io_dist+mpicomm are the same as io_dist+nompicomm, so it looks like the introduction of HDF5 is somehow changing the results (but only of the 2D (yaver, zaver) averages).
+        The read_data.py test (which reads var.aa) passes even with hdf5+mpicomm, so the difference cannot even be attributed to different random seeds for the initial conditions.
+        By inserting print statements in io_hdf5.f90/output_average_2D, I can see that the expected values are there in the local_data pointer array.
+            This suggests the issue is in the output_hdf5 (output_hdf5_slice_2D) subroutine
