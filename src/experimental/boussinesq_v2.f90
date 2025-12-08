@@ -185,7 +185,7 @@ module Density
 !
 !  All pencils that the Density module depends on are specified here.
 !
-!  20-11-04/anders: coded
+      lpenc_requested(i_graddivu) = .true.
 !
     endsubroutine pencil_criteria_density
 !***********************************************************************
@@ -209,7 +209,6 @@ module Density
 !  20-11-04/anders: coded
 !
       use EquationOfState, only: lnrho0, rho0
-      use Sub, only: gij_etc
 !
       real, dimension (mx,my,mz,mfarray) :: f
       type (pencil_case) :: p
@@ -245,8 +244,7 @@ module Density
 !
 !     Populate auxiliary variables
 !
-      call gij_etc(f,iuu,graddiv=gdu)
-      f(l1:l2,m,n,igdu:igdu+2) = gdu
+      f(l1:l2,m,n,igdu:igdu+2) = p%graddivu
 !
     endsubroutine calc_pencils_density
 !***********************************************************************
