@@ -14,8 +14,8 @@
 ! CPARAM logical, parameter :: lboussinesq = .true.
 !
 ! MVAR CONTRIBUTION 0
-! MAUX CONTRIBUTION 1
-! COMMUNICATED AUXILIARIES 1
+! MAUX CONTRIBUTION 3
+! COMMUNICATED AUXILIARIES 3
 !
 ! PENCILS PROVIDED rho; lnrho; rho1; glnrho(3); del2rho; del2lnrho
 ! PENCILS PROVIDED hlnrho(3,3); grho(3); glnrho2
@@ -53,6 +53,7 @@ module Density
   namelist /density_run_pars/ iorder_z, lwrite_debug, lremove_mean_temperature
 !
   real, pointer :: Pr
+  integer :: igdu=0 !index for grad(div(u)) in the f-array
 !
   contains
 !***********************************************************************
@@ -64,7 +65,7 @@ module Density
       if (lroot) call svn_id( &
           "$Id$")
 !
-      call farray_register_auxiliary('pp',ipp,communicated=.true.)
+      call farray_register_auxiliary('gdu',igdu,communicated=.true., vector=3)
       if (lsphere_in_a_box) lgravr=.true.
 
       call put_shared_variable('beta_glnrho_scaled',beta_glnrho_scaled,caller='register_density')
@@ -121,7 +122,7 @@ module Density
 !
       real, dimension (mx,my,mz,mfarray) :: f
 !
-      f(:,:,:,ipp)=1.
+!       f(:,:,:,igdu:igdu+2)=0.
 !
 !  Test of the Poisson solver
 !
@@ -208,12 +209,15 @@ module Density
 !  20-11-04/anders: coded
 !
       use EquationOfState, only: lnrho0, rho0
+      use Sub, only: gij_etc
 !
       real, dimension (mx,my,mz,mfarray) :: f
       type (pencil_case) :: p
 !
-      intent(in) :: f
-      intent(inout) :: p
+      intent(inout) :: f, p
+!
+      real, dimension (nx,3) :: gdu
+!
 ! rho
       if (lpencil(i_rho)) p%rho=rho0
 ! lnrho
@@ -239,7 +243,10 @@ module Density
 ! ekin
       if (lpencil(i_ekin)) p%ekin=0.5*p%u2
 !
-      call keep_compiler_quiet(f)
+!     Populate auxiliary variables
+!
+      call gij_etc(f,iuu,graddiv=gdu)
+      f(l1:l2,m,n,igdu:igdu+2) = gdu
 !
     endsubroutine calc_pencils_density
 !***********************************************************************
@@ -329,12 +336,20 @@ module Density
 !
 !  14-dec-09/dintrans: coded
 !
-      real, dimension (mx,my,mz,mfarray) :: f
-      real, dimension (mx,my,mz,mvar) :: df
-      real, dimension(1) :: mass_per_proc
+      use Poisson, only: inverse_laplacian
+!
+      real, dimension (mx,my,mz,mfarray), intent(in) :: f
+      real, dimension (mx,my,mz,mvar), intent(inout) :: df
+      real, dimension(1), intent(in) :: mass_per_proc
+!
+      real, dimension (nx,ny,nz,3) :: correction
 !
       call keep_compiler_quiet(f,df)
       call keep_compiler_quiet(mass_per_proc)
+!
+      correction = f(l1:l2,m1:m2,n1:n2,igdu:igdu+2)
+      call inverse_laplacian(correction)
+      df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
     endsubroutine density_after_mn
 !***********************************************************************
@@ -350,184 +365,10 @@ module Density
 !***********************************************************************
     subroutine boussinesq(f)
 !
-!  12-may-12/MR: factors dt removed; updating of ghosts zones 
-!                for non-periodicity in z direction added
-!  15-may-12/dintrans: the updating of ghost zones before inverting the laplacian 
-!                is not needed as vertical BCs are hard-coded in the linear solver
-!
-      use Poisson, only: inverse_laplacian
-      use Sub, only: div, grad
-      use Boundcond, only: update_ghosts
-      use SharedVariables, only: get_shared_variable
-!
-      real, dimension (mx,my,mz,mfarray) :: f
-      real, dimension (nx,3) :: gpp
-      real, dimension (nx) :: phi_rhs_pencil
-      integer :: j, ju, ierr
-!
-      if (lviscosity) then
-        call update_ghosts(f,iuu,iuu+2)
-      else
-        call update_ghosts(f)
-!
-!  Implicit advance of both viscous and radiative diffusion terms
-!
-        do j=1,3
-          ju=j+iuu-1
-          if (nprocz>1) then
-            call implicit_diffusion_MPI(f,ju,Pr)
-          else
-            call implicit_diffusion(f,ju,Pr)
-          endif
-        enddo
-        if (nprocz>1) then
-          call implicit_diffusion_MPI(f,iTT,1.)
-        else
-          call implicit_diffusion(f,iTT,1.)
-        endif
-      endif
-!
-!  Find the divergence of uu
-!
-      do n=n1,n2; do m=m1,m2
-        call div(f,iuu,phi_rhs_pencil)
-        f(l1:l2,m,n,ipp)=phi_rhs_pencil
-      enddo; enddo
-      if (lwrite_debug) write(31) f(l1:l2,m1:m2,n1:n2,ipp)
-!
-      call inverse_laplacian(f(l1:l2,m1:m2,n1:n2,ipp))
-      if (lwrite_debug) write(32) f(l1:l2,4,n1:n2,ipp)
-!
-!  refresh the ghost zones for the new pressure
-!
-      call update_ghosts(f,ipp)
-!
-!  Correct the velocity field with the gradient term
-!
-      do n=n1,n2; do m=m1,m2
-        call grad(f,ipp,gpp)
-        do j=1,3
-          ju=j+iuu-1
-          f(l1:l2,m,n,ju)=f(l1:l2,m,n,ju)-gpp(:,j)
-        enddo
-      enddo; enddo
-!      f(:,:,:,ipp)=f(:,:,:,ipp)/dt
+      real, dimension (mx,my,mz,mfarray), intent(in) :: f
+      call keep_compiler_quiet(f)
 !
     endsubroutine boussinesq
-!***********************************************************************
-    subroutine implicit_diffusion(f,ivar,cdiff)
-!
-!  06-June-2012/dintrans: coded
-!  2-D ADI scheme for a laplacian-like diffusion term and a constant
-!  diffusion coefficient cdiff. The ADI scheme is of Yakonov's form:
-!
-!    (1-dt/2*Lamba_x)*T^(n+1/2) = T^n + Lambda_x(T^n) + Lambda_z(T^n)
-!    (1-dt/2*Lamba_z)*T^(n+1)   = T^(n+1/2)
-!
-!  where Lambda_x and Lambda_z denote diffusion operators.
-!  Note: this form is more adapted for a parallelisation compared the 
-!  Peaceman & Rachford one.
-!
-      use General, only: tridag, cyclic
-!
-      implicit none
-!
-      real, dimension(mx,my,mz,mfarray) :: f
-      real, dimension(mx,mz) :: TT, finter
-      real, dimension(nx)    :: ax, bx, cx, rhsx
-      real, dimension(nz)    :: az, bz, cz, rhsz
-      real    :: aalpha, bbeta
-      integer :: l, n, ivar
-      real    :: cdiff
-!
-      TT=f(:,4,:,ivar)
-!
-!  rows dealt implicitly
-!
-      ax=-cdiff*dt*dx_2/2.
-      bx=1.+cdiff*dt*dx_2
-      cx=ax
-      aalpha=cx(nx) ; bbeta=ax(1)  ! x-direction periodic
-      do n=n1,n2
-        rhsx=TT(l1:l2,n)+cdiff*dt*dz_2/2.*(TT(l1:l2,n+1)-2.*TT(l1:l2,n)+TT(l1:l2,n-1))
-        rhsx=rhsx+cdiff*dt*dx_2/2.*(TT(l1+1:l2+1,n)-2.*TT(l1:l2,n)+TT(l1-1:l2-1,n))
-        call cyclic(ax,bx,cx,aalpha,bbeta,rhsx,finter(l1:l2,n),nx)
-      enddo
-!
-!  columns dealt implicitly
-!
-      az=-cdiff*dt*dz_2/2.
-      bz=1.+cdiff*dt*dz_2
-      cz=az
-      if (ivar.eq.iTT .or. ivar.eq.iuz) then
-        bz(1)=1.  ; cz(1)=0.  ; rhsz(1)=0.   ! T = uz = 0
-        bz(nz)=1. ; az(nz)=0. ; rhsz(nz)=0.  ! T = uz = 0
-      else
-        cz(1)=2.*cz(1)    ! ux' = 0
-        az(nz)=2.*az(nz)  ! ux' = 0
-      endif
-      do l=l1,l2
-        rhsz=finter(l,n1:n2)
-        call tridag(az,bz,cz,rhsz,f(l,4,n1:n2,ivar))
-      enddo
-!
-    endsubroutine implicit_diffusion
-!***********************************************************************
-    subroutine implicit_diffusion_MPI(f,ivar,cdiff)
-!
-!  06-June-2012/dintrans: coded
-!  parallel version of implicit_diffusion
-!
-      use General, only: tridag, cyclic
-      use Mpicomm, only: transp_xz, transp_zx
-!
-      implicit none
-!
-      integer, parameter :: nxt=nx/nprocz
-      real, dimension(mx,my,mz,mfarray) :: f
-      real, dimension(mx,mz)      :: TT, finter
-      real, dimension(nzgrid,nxt) :: fintert, wtmp
-      real, dimension(nx)         :: ax, bx, cx, rhsx
-      real, dimension(nzgrid)     :: az, bz, cz, rhsz
-      real    :: aalpha, bbeta
-      integer :: l, n, ivar
-      real    :: cdiff
-!
-      TT=f(:,4,:,ivar)
-!
-!  rows dealt implicitly
-!
-      ax(:)=-cdiff*dt*dx_2/2.
-      bx(:)=1.+cdiff*dt*dx_2
-      cx(:)=ax
-      aalpha=cx(nx) ; bbeta=ax(1)  ! x-direction periodic
-      do n=n1,n2
-        rhsx=TT(l1:l2,n)+cdiff*dt*dz_2/2.*(TT(l1:l2,n+1)-2.*TT(l1:l2,n)+TT(l1:l2,n-1))
-        rhsx=rhsx+cdiff*dt*dx_2/2.*(TT(l1+1:l2+1,n)-2.*TT(l1:l2,n)+TT(l1-1:l2-1,n))
-        call cyclic(ax,bx,cx,aalpha,bbeta,rhsx,finter(l1:l2,n),nx)
-      enddo
-!
-!  columns dealt implicitly
-!
-      az(:)=-cdiff*dt*dz_2/2.
-      bz(:)=1.+cdiff*dt*dz_2
-      cz(:)=az
-      if (ivar.eq.iTT .or. ivar.eq.iuz) then
-        bz(1)=1.  ; cz(1)=0.  ; rhsz(1)=0.               ! T = uz = 0
-        bz(nzgrid)=1. ; az(nzgrid)=0. ; rhsz(nzgrid)=0.  ! T = uz = 0
-      else
-        cz(1)=2.*cz(1)            ! ux' = 0
-        az(nzgrid)=2.*az(nzgrid)  ! ux' = 0
-      endif
-!
-      call transp_xz(finter(l1:l2,n1:n2), fintert)
-      do l=1,nxt
-        rhsz=fintert(:,l)
-        call tridag(az,bz,cz,rhsz,wtmp(:,l))
-      enddo
-      call transp_zx(wtmp, f(l1:l2,4,n1:n2,ivar))
-!
-    endsubroutine implicit_diffusion_MPI
 !***********************************************************************
     function mean_density(f)
 !
