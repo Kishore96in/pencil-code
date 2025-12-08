@@ -2651,7 +2651,7 @@ module Hydro
             f(l1:l2,m,n,iux)=ampl_ux(j)*sin(x(l1:l2))*cos(z(n))
             f(l1:l2,m,n,iuz)=-ampl_ux(j)*cos(x(l1:l2))*sin(z(n))
           enddo; enddo
-          f(:,:,:,iuz)=0.   !!!
+!           f(:,:,:,iuz)=0.   ! 2025-Dec-08/Kishore: commented out an apparent mistake
 !
         case ('incompressive-shwave')
 ! incompressible shear wave of Johnson & Gammine (2005a)
