@@ -351,6 +351,14 @@ module Density
       enddo
       df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
+      if (lupdate_courant_dt) then
+        do n=1,nz
+          do m=1,ny
+            maxsrc = max(maxsrc, maxval(abs(correction(:,m,n,:)), dim=2))
+          enddo
+        enddo
+      endif
+!
     endsubroutine density_after_mn
 !***********************************************************************
     subroutine dynamical_diffusion(uc)
