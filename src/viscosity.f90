@@ -1236,7 +1236,11 @@ module Viscosity
 ! PJK: But what if you don't use one of those?
 ! JW: p%uu is needed, these others are already requested.
       if (idiag_fviscrsphmphi/=0) lpenc_diagnos2d(i_evr)=.true.
-      if (lboussinesq) lpenc_requested(i_graddivu)=.false.
+! 2025-Dec-08/Kishore: please override lpenc_requested(i_graddivu) in your
+! Boussinesq module if you really need it. I have wasted an hour trying to
+! figure out why pencil_check complains that graddivu has not been requested
+! even though I was explicitly requesting it in my module.
+!       if (lboussinesq) lpenc_requested(i_graddivu)=.false.
       if (damp_sound/=0.) lpenc_requested(i_divu)=.true.
       if (lvisc_hyper3_mesh_residual) lpenc_requested(i_der6u_res)=.true.
       if (lvisc_schur_223) then
