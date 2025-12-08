@@ -48,9 +48,7 @@ module Density
 !
   include '../density.h'
 !
-  integer :: iorder_z=4
-!
-  namelist /density_run_pars/ iorder_z, lwrite_debug, lremove_mean_temperature
+  namelist /density_run_pars/ lwrite_debug, lremove_mean_temperature
 !
   real, pointer :: Pr
   integer :: igdu=0 !index for grad(div(u)) in the f-array
