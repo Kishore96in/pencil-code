@@ -183,7 +183,6 @@ module Density
 !
 !  All pencils that the Density module depends on are specified here.
 !
-      lpenc_requested(i_graddivu) = .true.
 !
     endsubroutine pencil_criteria_density
 !***********************************************************************
@@ -239,10 +238,6 @@ module Density
       if (lpencil(i_uij5glnrho)) p%uij5glnrho=0.0
 ! ekin
       if (lpencil(i_ekin)) p%ekin=0.5*p%u2
-!
-!     Populate auxiliary variables
-!
-      f(l1:l2,m,n,igdu:igdu+2) = p%graddivu
 !
     endsubroutine calc_pencils_density
 !***********************************************************************
@@ -350,7 +345,6 @@ module Density
           correction(:,m-nghost,n-nghost,:) = gddu
         enddo
       enddo
-      correction = correction + f(l1:l2,m1:m2,n1:n2,igdu:igdu+2)
       call inverse_laplacian(correction)
       df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
