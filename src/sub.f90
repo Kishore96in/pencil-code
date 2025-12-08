@@ -2467,10 +2467,12 @@ module Sub
 !
 !  12-sep-01/axel: coded
 !  15-mar-07/wlad: added cylindrical coordinates
+!  08-Dec-2025/Kishore: don't hardcode the dimensions of f along axis 4 (needed
+!                       in experimental/boussinesq_v2.f90)
 !
       use Deriv, only: der,der2,derij
 !
-      real, dimension (mx,my,mz,mfarray) :: f
+      real, dimension (mx,my,mz,*) :: f
       real, dimension (nx,3,3) :: fjji,fijj
       real, dimension (nx,3,3), optional :: gradcurl
       real, dimension (nx,3), optional :: del2,graddiv,curlcurl
