@@ -417,6 +417,10 @@ ifeq ($(DENSITY),experimental/boussinesq)
   DENSITY_METHODS = nodensity_methods
 endif
 #
+ifeq ($(DENSITY),experimental/boussinesq_v2)
+  DENSITY_METHODS = nodensity_methods
+endif
+#
 ifeq ($(DENSITY),experimental/anelastic)
   DENSITY_METHODS = nodensity_methods
 endif
