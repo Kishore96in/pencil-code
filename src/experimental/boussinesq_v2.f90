@@ -336,6 +336,7 @@ module Density
 !
       real, dimension (nx,ny,nz,3) :: correction
       real, dimension (nx,3) :: gddu
+      integer :: i
 !
       call keep_compiler_quiet(mass_per_proc)
 !
@@ -345,7 +346,9 @@ module Density
           correction(:,m-nghost,n-nghost,:) = gddu
         enddo
       enddo
-      call inverse_laplacian(correction)
+      do i=1,3
+        call inverse_laplacian(correction(:,:,:,i))
+      enddo
       df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
     endsubroutine density_after_mn
