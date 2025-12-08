@@ -333,17 +333,24 @@ module Density
 !  14-dec-09/dintrans: coded
 !
       use Poisson, only: inverse_laplacian
+      use Sub, only: del2v_etc
 !
       real, dimension (mx,my,mz,mfarray), intent(in) :: f
       real, dimension (mx,my,mz,mvar), intent(inout) :: df
       real, dimension(1), intent(in) :: mass_per_proc
 !
       real, dimension (nx,ny,nz,3) :: correction
+      real, dimension (nx,3) :: gddu
 !
-      call keep_compiler_quiet(f,df)
       call keep_compiler_quiet(mass_per_proc)
 !
-      correction = f(l1:l2,m1:m2,n1:n2,igdu:igdu+2)
+      do n=n1,n2
+        do m=m1,m2
+          call del2v_etc(df,iuu,graddiv=gddu)
+          correction(:,m-nghost,n-nghost,:) = gddu
+        enddo
+      enddo
+      correction = correction + f(l1:l2,m1:m2,n1:n2,igdu:igdu+2)
       call inverse_laplacian(correction)
       df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
