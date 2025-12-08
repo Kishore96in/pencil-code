@@ -26,8 +26,6 @@ module Poisson
 
   implicit none
 
-  real :: dummy=0.0
-
   include 'poisson.h'
 !
   integer :: niter_poisson=30 !Number of iterations for multigrid solver.
