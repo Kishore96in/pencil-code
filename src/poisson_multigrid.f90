@@ -17,27 +17,25 @@
 ! MAUX CONTRIBUTION 0
 !
 !***************************************************************
-
 module Poisson
-
+!
   use Cdata
   use General, only: keep_compiler_quiet
   use Messages
-
+!
   implicit none
-
+!
   include 'poisson.h'
 !
   integer :: niter_poisson=30 !Number of iterations for multigrid solver.
-
+!
   namelist /poisson_init_pars/ &
       niter_poisson
-
+!
   namelist /poisson_run_pars/ &
       niter_poisson
-
+!
   contains
-
 !***********************************************************************
     subroutine initialize_poisson()
 !
