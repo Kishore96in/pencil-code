@@ -344,8 +344,6 @@ module Density
       real, dimension(1), intent(in) :: mass_per_proc
 !
       real, dimension (nx,ny,nz,3) :: correction
-      real, dimension (nx,3) :: gddu
-      integer :: i
 !
       call keep_compiler_quiet(mass_per_proc)
 !
