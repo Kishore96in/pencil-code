@@ -39,7 +39,8 @@ module Density
              lremove_mean_temperature=.false.
 !
   logical :: lwrite_debug=.false.
-  logical :: lclean_div=.true. !whether to clean up the divergence of the velocity field after every timestep.
+  integer :: iclean=0 !clean up the divergence of the velocity field
+    ! after every iclean timesteps. Set to zero to disable
 !
   real, dimension (mz) :: lnrhomz
   real, dimension (nz) :: glnrhomz
@@ -49,7 +50,7 @@ module Density
 !
   include '../density.h'
 !
-  namelist /density_run_pars/ lwrite_debug, lremove_mean_temperature
+  namelist /density_run_pars/ lwrite_debug, lremove_mean_temperature, iclean
 !
   real, pointer :: Pr
 !
@@ -252,9 +253,11 @@ module Density
 !     Apply the incompressible projection operator to uu so that divergence
 !     doesn't accumulate due to numerical errors.
 !
-      if (lclean_div) then
-        call calc_correction(f(:,:,:,iux:iuz), correction)
-        f(l1:l2,m1:m2,n1:n2,iux:iuz) = f(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
+      if (iclean/=0) then
+        if (mod(it,iclean) == 0) then
+          call calc_correction(f(:,:,:,iux:iuz), correction)
+          f(l1:l2,m1:m2,n1:n2,iux:iuz) = f(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
+        endif
       endif
 !
     endsubroutine density_before_boundary
