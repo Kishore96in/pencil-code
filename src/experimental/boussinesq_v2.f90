@@ -327,6 +327,7 @@ module Density
 !
 !  14-dec-09/dintrans: coded
 !
+      use Boundcond, only: update_ghosts
       use Poisson, only: inverse_laplacian
       use Sub, only: del2v_etc
 !
@@ -340,6 +341,8 @@ module Density
 !
       call keep_compiler_quiet(mass_per_proc)
 !
+      !NOTE: the below will be correct for no-slip, free-slip, impenetrable, or periodic boundaries, but probably not in general (e.g. fixed nonzero value)
+      call update_ghosts(df,iux,iuz)
       do n=n1,n2
         do m=m1,m2
           call del2v_etc(df,iuu,graddiv=gddu)
