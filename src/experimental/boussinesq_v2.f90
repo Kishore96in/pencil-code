@@ -51,19 +51,16 @@ module Density
   namelist /density_run_pars/ lwrite_debug, lremove_mean_temperature
 !
   real, pointer :: Pr
-  integer :: igdu=0 !index for grad(div(u)) in the f-array
 !
   contains
 !***********************************************************************
     subroutine register_density
 !
-      use FArrayManager, only: farray_register_auxiliary
       use SharedVariables, only: put_shared_variable
 !
       if (lroot) call svn_id( &
           "$Id$")
 !
-      call farray_register_auxiliary('gdu',igdu,communicated=.true., vector=3)
       if (lsphere_in_a_box) lgravr=.true.
 
       call put_shared_variable('beta_glnrho_scaled',beta_glnrho_scaled,caller='register_density')
