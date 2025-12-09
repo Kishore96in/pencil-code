@@ -1016,6 +1016,9 @@ module Equ
       real, intent(INOUT), dimension(mx,my,mz,mfarray) :: f
       real, intent(INOUT), dimension(mx,my,mz,mvar)    :: df
 
+!     2025-Dec-09/Kishore: why do we need the checks like if(lhydro) here? The
+!                          no* modules already seem to define the appropriate
+!                          dummy subroutines.
       if (lhydro)          call hydro_after_boundary(f)
       if (lviscosity)      call viscosity_after_boundary(f)
       if (lmagnetic)       call magnetic_after_boundary(f)
