@@ -39,6 +39,7 @@ module Density
              lremove_mean_temperature=.false.
 !
   logical :: lwrite_debug=.false.
+  logical :: lclean_div=.true. !whether to clean up the divergence of the velocity field after every timestep.
 !
   real, dimension (mz) :: lnrhomz
   real, dimension (nz) :: glnrhomz
@@ -243,8 +244,18 @@ module Density
       use Sub, only: remove_mean
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
-!     
+!
+      real, dimension (nx,ny,nz,3) :: correction
+!
       if (lremove_mean_temperature) call remove_mean(f,iTT)
+!
+!     Apply the incompressible projection operator to uu so that divergence
+!     doesn't accumulate due to numerical errors.
+!
+      if (lclean_div) then
+        call calc_correction(f(:,:,:,iux:iuz), correction)
+        f(l1:l2,m1:m2,n1:n2,iux:iuz) = f(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
+      endif
 !
     endsubroutine density_before_boundary
 !***********************************************************************
