@@ -341,17 +341,7 @@ module Density
 !
       call keep_compiler_quiet(mass_per_proc)
 !
-      !NOTE: the below will be correct for no-slip, free-slip, impenetrable, or periodic boundaries, but probably not in general (e.g. fixed nonzero value)
-      call update_ghosts(df,iux,iuz)
-      do n=n1,n2
-        do m=m1,m2
-          call del2v_etc(df,iuu,graddiv=gddu)
-          correction(:,m-nghost,n-nghost,:) = gddu
-        enddo
-      enddo
-      do i=1,3
-        call inverse_laplacian(correction(:,:,:,i))
-      enddo
+      call calc_correction(df(:,:,:,iux:iuz), correction)
       df(l1:l2,m1:m2,n1:n2,iux:iuz) = df(l1:l2,m1:m2,n1:n2,iux:iuz) - correction
 !
       if (lupdate_courant_dt) then
@@ -363,6 +353,40 @@ module Density
       endif
 !
     endsubroutine density_after_mn
+!***********************************************************************
+    subroutine calc_correction(uu, correction)
+!
+!     Calculate the correction to uu corresponding to the incompressible
+!     projection operator (-k_ik_j/k^2 in Fourier space). The corrected velocity
+!     field would then be uu - correction
+!
+      use Boundcond, only: update_ghosts
+      use Poisson, only: inverse_laplacian
+      use Sub, only: del2v_etc
+!
+      real, dimension (mx,my,mz,3), intent(in) :: uu
+      real, dimension (nx,ny,nz,3), intent(out) :: correction
+!
+      integer :: i
+      real, dimension (nx,3) :: gddu
+!
+!     NOTE: if used for df, the below will be correct for no-slip, free-slip,
+!     impenetrable, or periodic boundaries, but not in general (e.g. fixed
+!     nonzero value)
+      call update_ghosts(uu,1,3)
+!
+      do n=n1,n2
+        do m=m1,m2
+          call del2v_etc(uu,1,graddiv=gddu)
+          correction(:,m-nghost,n-nghost,:) = gddu
+        enddo
+      enddo
+!
+      do i=1,3
+        call inverse_laplacian(correction(:,:,:,i))
+      enddo
+!
+    endsubroutine calc_correction
 !***********************************************************************
     subroutine dynamical_diffusion(uc)
 !   
