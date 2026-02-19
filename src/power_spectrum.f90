@@ -514,6 +514,26 @@ outer:do ikz=1,nz
           call curli(f,iaa,a1(:,m-nghost,n-nghost),ivec)
         enddo
         enddo
+        !BEGIN debug
+        !trying to see if ar is being correctly calculated.
+        if (ibb/=0) then
+          print*,'--------------------'
+          print*,'KISHORE: power_parallel_portion'
+          print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
+          print*,'a1(1:2,1,1)', a1(1:2,1,1)
+          print*,'--------------------'
+          !DANGER: above is wrong even though the ghosts have been correctly updated!
+          !sanity checks below assume periodic BCs
+          if (.not. all(f(1:6,m1,n1,iax) == f(l2-2:l2+3,m1,n1,iax))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
+          if (.not. all(f(1:6,m1,n1,iay) == f(l2-2:l2+3,m1,n1,iay))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
+          if (.not. all(f(1:6,m1,n1,iaz) == f(l2-2:l2+3,m1,n1,iaz))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
+          if (.not. all(f(l1,1:6,n1,iax) == f(l1,m2-2:m2+3,n1,iax))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated along y')
+        endif
+        !END debug
       elseif (trim(sp)=='a') then
         !$omp workshare
         a1 = f(l1:l2,m1:m2,n1:n2,iax+ivec-1)
@@ -1006,6 +1026,14 @@ outer:do ikz=1,nz
     if (sp=='u') then
       !$omp workshare
       ar =f(l1:l2,m1:m2,n1:n2,iux+ivec-1)
+      !BEGIN debug
+      !trying to see if ar is being correctly calculated.
+      print*,'--------------------'
+      print*,'KISHORE: comp_spectrum_xy'
+      print*,'uu(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,iuu+ivec-1)
+      print*,'ar(1:2,1,1)', ar(1:2,1,1)
+      print*,'--------------------'
+      !END debug
       !$omp end workshare
     elseif (sp=='rho') then
       !$omp workshare
@@ -1023,6 +1051,16 @@ outer:do ikz=1,nz
         call curli(f,iaa,ar(:,m-nghost,n-nghost),ivec)
       enddo
       enddo
+      !BEGIN debug
+      !trying to see if ar is being correctly calculated.
+      if (ibb/=0) then
+        print*,'--------------------'
+        print*,'KISHORE: comp_spectrum_xy'
+        print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
+        print*,'ar(1:2,1,1)', ar(1:2,1,1)
+        print*,'--------------------'
+      endif
+      !END debug
     elseif (sp=='a') then
       !$omp workshare
       ar = f(l1:l2,m1:m2,n1:n2,iax+ivec-1)
@@ -1040,12 +1078,23 @@ outer:do ikz=1,nz
 !  Case distinction, use curl of v in, e.g., the conservative case.
 !
         if (ivx==0) then
+!           print*,'KISHORE: ivx==0' !debug !yes, is triggered.
           call curli(f,iuu,ar(:,m-nghost,n-nghost),ivec)
         else
           call curli(f,ivv,ar(:,m-nghost,n-nghost),ivec)
         endif
       enddo
       enddo
+      !BEGIN debug
+      !trying to see if ar is being correctly calculated.
+      if (ioo/=0) then
+        print*,'--------------------'
+        print*,'KISHORE: comp_spectrum_xy'
+        print*,'oo_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ioo+ivec-1)
+        print*,'ar(1:2,1,1)', ar(1:2,1,1)
+        print*,'--------------------'
+      endif
+      !END debug
     else
       call fatal_error('comp_spectrum_xy',"no such sp: "//trim(sp))
     endif
