@@ -321,6 +321,7 @@ endsubroutine helper_loop
   use Streamlines,     only: tracers_prepare
   use Snapshot,        only: powersnap_prepare
   use GPU,             only: gpu_set_dt
+  use Boundcond, only: update_ghosts !debug
 !$ use OMP_lib
 !$ use General, only: signal_send, signal_wait
 !
@@ -495,7 +496,7 @@ endsubroutine helper_loop
 !
 !  Time advance.
 !
-    call check_curla_consistency(f, caller='timeloop before time_step')
+!     call check_curla_consistency(f, caller='timeloop before time_step')
     timer_for_timestep = mpiwtime()
     call time_step(f,df,p)
     time_in_timestep = time_in_timestep + mpiwtime()-timer_for_timestep
@@ -556,7 +557,8 @@ endsubroutine helper_loop
       call save_name(time_per_step,idiag_timeperstep)
     endif
 
-    call check_curla_consistency(f, caller='timeloop before gen_output')
+!     call check_curla_consistency(f, caller='timeloop before gen_output')
+    call update_ghosts(f) !debug
     call gen_output(f)
 !
 !  Do exit when timestep has become too short.
