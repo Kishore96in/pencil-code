@@ -507,6 +507,29 @@ outer:do ikz=1,nz
         enddo
         enddo
       elseif (trim(sp)=='b') then
+        !BEGIN debug
+        !sanity checks below assume periodic BCs
+        if (.not. all(f(1:6,m1:m2,n1:n2,iax) == f(l2-2:l2+3,m1:m2,n1:n2,iax))) &
+          call fatal_error('power_parallel_portion', 'x ghosts not updated for ax')
+        if (.not. all(f(l1:l2,1:6,n1:n2,iax) == f(l1:l2,m2-2:m2+3,n1:n2,iax))) &
+          call fatal_error('power_parallel_portion', 'y ghosts not updated for ax')
+        if (.not. all(f(l1:l2,m1:m2,1:6,iax) == f(l1:l2,m1:m2,n2-2:n2+3,iax))) &
+          call fatal_error('power_parallel_portion', 'z ghosts not updated for ax')
+        !
+        if (.not. all(f(1:6,m1:m2,n1:n2,iay) == f(l2-2:l2+3,m1:m2,n1:n2,iay))) &
+          call fatal_error('power_parallel_portion', 'x ghosts not updated for ay')
+        if (.not. all(f(l1:l2,1:6,n1:n2,iay) == f(l1:l2,m2-2:m2+3,n1:n2,iay))) &
+          call fatal_error('power_parallel_portion', 'y ghosts not updated for ay')
+        if (.not. all(f(l1:l2,m1:m2,1:6,iay) == f(l1:l2,m1:m2,n2-2:n2+3,iay))) &
+          call fatal_error('power_parallel_portion', 'z ghosts not updated for ay')
+        !
+        if (.not. all(f(1:6,m1:m2,n1:n2,iaz) == f(l2-2:l2+3,m1:m2,n1:n2,iaz))) &
+          call fatal_error('power_parallel_portion', 'x ghosts not updated for az')
+        if (.not. all(f(l1:l2,1:6,n1:n2,iaz) == f(l1:l2,m2-2:m2+3,n1:n2,iaz))) &
+          call fatal_error('power_parallel_portion', 'y ghosts not updated for az')
+        if (.not. all(f(l1:l2,m1:m2,1:6,iaz) == f(l1:l2,m1:m2,n2-2:n2+3,iaz))) &
+          call fatal_error('power_parallel_portion', 'z ghosts not updated for az')
+        !END debug
         !$omp do collapse(2)
         do n_loc=n1,n2
         do m_loc=m1,m2
@@ -515,36 +538,31 @@ outer:do ikz=1,nz
         enddo
         enddo
         !BEGIN debug
-        !trying to see if ar is being correctly calculated.
+        !trying to see if a1 is being correctly calculated.
         if (ibb/=0) then
           print*,'--------------------'
           print*,'KISHORE: power_parallel_portion'
-          print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
-          print*,'a1(1:2,1,1)', a1(1:2,1,1)
-          print*,'a1(1:6,1,1)', a1(1:6,1,1)
+          print*,'bb_aux(l1:l1+1,m1,n1,ivec)=', f(l1:l1+1,m1,n1,ibb+ivec-1)
+          !DANGER: below does not match with the above!
+          print*,'a1(1:2,1,1)=', a1(1:2,1,1)
+          print*,'maxdiff=',maxval(abs(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) - a1))
+          print*,'mindiff=',minval(abs(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) - a1))
           print*,'--------------------'
-          !DANGER: above is wrong even though the ghosts have been correctly updated!
-          !sanity checks below assume periodic BCs
-          if (.not. all(f(1:6,m1:m2,n1:n2,iax) == f(l2-2:l2+3,m1:m2,n1:n2,iax))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
-          if (.not. all(f(l1:l2,1:6,n1:n2,iax) == f(l1:l2,m2-2:m2+3,n1:n2,iax))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
-          if (.not. all(f(l1:l2,m1:m2,1:6,iax) == f(l1:l2,m1:m2,n2-2:n2+3,iax))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
+          !Things I have checked
+          !1. ghosts are updated
+          !2. no values match between f(ibb) and a1
+          !3. there is no mismatch between curl and curli (checked in hydro_before_boundary)
+          !4. There is no mismatch between curl_mn and curl_other (checked in calc_pencils_magnetic_pencpar; contradicts Chao-Chin's comment in commit 5416c8fff127e2a0825812726f26eb0d85773ca5)
           !
-          if (.not. all(f(1:6,m1:m2,n1:n2,iay) == f(l2-2:l2+3,m1:m2,n1:n2,iay))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
-          if (.not. all(f(l1:l2,1:6,n1:n2,iay) == f(l1:l2,m2-2:m2+3,n1:n2,iay))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
-          if (.not. all(f(l1:l2,m1:m2,1:6,iay) == f(l1:l2,m1:m2,n2-2:n2+3,iay))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
-          !
-          if (.not. all(f(1:6,m1:m2,n1:n2,iaz) == f(l2-2:l2+3,m1:m2,n1:n2,iaz))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
-          if (.not. all(f(l1:l2,1:6,n1:n2,iaz) == f(l1:l2,m2-2:m2+3,n1:n2,iaz))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
-          if (.not. all(f(l1:l2,m1:m2,1:6,iaz) == f(l1:l2,m1:m2,n2-2:n2+3,iaz))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
+          !some checks
+          if (.not. all(findloc(a1,f(l1,m1,n1,ibb+ivec-1)) == 0)) then
+            !If this is not triggered, it means that we are not simply facing an indexing issue!
+            call fatal_Error('power_parallel_portion', 'index offset between a1 and f')
+          endif
+          if (any(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) == a1)) then
+            !a check that will fail if the code is correctly working
+            call fatal_error('power_parallel_portion', 'some elements of a1 are in f!')
+          endif
         endif
         !END debug
       elseif (trim(sp)=='a') then
@@ -1045,6 +1063,7 @@ outer:do ikz=1,nz
       print*,'KISHORE: comp_spectrum_xy'
       print*,'uu(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,iuu+ivec-1)
       print*,'ar(1:2,1,1)', ar(1:2,1,1)
+      print*,'maxdiff=',maxval(abs(f(l1:l2,m1:m2,n1:n2,iuu+ivec-1) - ar))
       print*,'--------------------'
       !END debug
       !$omp end workshare
