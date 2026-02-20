@@ -207,6 +207,7 @@ module Timestep
           call advance_shear(f, df, dtsub)
         endif
 !
+        call check_curla_consistency(f, caller='time_step before update')
         start_time = mpiwtime()
         if (lgpu) then
           call update_after_substep_gpu
