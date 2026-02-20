@@ -46,6 +46,7 @@
 module Run_module
 
     use Cdata
+    use Sub, only: check_curla_consistency !debug
 !
     implicit none
 
@@ -274,7 +275,10 @@ endsubroutine helper_loop
 !
 !  Save spectrum snapshot.
 !
-    if (dspec/=impossible .or. itspec/=impossible_int) call powersnap(f)
+    if (dspec/=impossible .or. itspec/=impossible_int) then
+      call check_curla_consistency(f, caller='gen_output')
+      call powersnap(f)
+    endif
     if (lroot.and.(dspec/=impossible .or. itspec/=impossible_int).and.lspec) print*, 'gen_output powersnap'
 !
 !  Save global variables.
