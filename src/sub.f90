@@ -9415,6 +9415,8 @@ if (notanumber(f(ll,mm,2:mz-2,iff))) print*, 'DIFFZ:k,ll,mm=', k,ll,mm
       enddo; enddo; enddo
 !
       if (.not. all(bb == f(l1:l2,m1:m2,n1:n2,ibb:ibb+2))) then
+        print*,'bb=',bb(1,1,1,1)
+        print*,'f(ibb)=',f(l1,m1,n1,ibb)
         if (present(caller)) then
           call fatal_error('check_curla_consistency', 'mismatch in '//trim(caller))
         else
