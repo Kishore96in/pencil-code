@@ -508,7 +508,7 @@ outer:do ikz=1,nz
         enddo
       elseif (trim(sp)=='b') then
         !BEGIN debug
-        !sanity checks below assume periodic BCs
+        !sanity checks below assume periodic BCs and nproc=1
         if (.not. all(f(1:6,m1:m2,n1:n2,iax) == f(l2-2:l2+3,m1:m2,n1:n2,iax))) &
           call fatal_error('power_parallel_portion', 'x ghosts not updated for ax')
         if (.not. all(f(l1:l2,1:6,n1:n2,iax) == f(l1:l2,m2-2:m2+3,n1:n2,iax))) &
@@ -545,6 +545,7 @@ outer:do ikz=1,nz
           print*,'bb_aux(l1:l1+1,m1,n1,ivec)=', f(l1:l1+1,m1,n1,ibb+ivec-1)
           !DANGER: below does not match with the above!
           print*,'a1(1:2,1,1)=', a1(1:2,1,1)
+          !
           print*,'maxdiff=',maxval(abs(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) - a1))
           print*,'mindiff=',minval(abs(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) - a1))
           print*,'--------------------'
