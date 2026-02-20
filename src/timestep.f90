@@ -10,6 +10,7 @@
 module Timestep
 !
   use Cdata
+  use Sub, only: check_curla_consistency
 !
   implicit none
 !
@@ -160,6 +161,7 @@ module Timestep
 !  Change df according to the chosen physics modules.
 !
         call pde(f,df,p)
+        call check_curla_consistency(f, caller='time_step after pde')
 
         if (lode) call ode
 
@@ -212,6 +214,7 @@ module Timestep
           call update_after_substep(f,df,dtsub,llast)
         endif
         after_substep_sum_time = after_substep_sum_time + mpiwtime()-start_time
+        call check_curla_consistency(f, caller='time_step after update')
 !
         ! [PAB] according to MR this breaks the autotest.
         ! @Piyali: there must be a reason to add an additional global communication,
