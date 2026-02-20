@@ -207,7 +207,6 @@ module Timestep
           call advance_shear(f, df, dtsub)
         endif
 !
-        call check_curla_consistency(f, caller='time_step before update')
         start_time = mpiwtime()
         if (lgpu) then
           call update_after_substep_gpu
@@ -215,7 +214,6 @@ module Timestep
           call update_after_substep(f,df,dtsub,llast)
         endif
         after_substep_sum_time = after_substep_sum_time + mpiwtime()-start_time
-        call check_curla_consistency(f, caller='time_step after update')
 !
         ! [PAB] according to MR this breaks the autotest.
         ! @Piyali: there must be a reason to add an additional global communication,
@@ -232,6 +230,7 @@ module Timestep
 !
     if (.not. lgpu)  call split_update(f)
     if (lgpu)  call split_update_gpu(f)
+!     call check_curla_consistency(f, caller='time_step end')
 !
     endsubroutine time_step
 !***********************************************************************
