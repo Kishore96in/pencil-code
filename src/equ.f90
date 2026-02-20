@@ -380,6 +380,7 @@ module Equ
 !  outside of the considered pencil.
 !
         call freeze(df,p)
+        call check_curla_consistency(f, caller='pde after freeze')
 
 !  Boundary treatment of the df-array.
 !
