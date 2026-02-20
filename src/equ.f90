@@ -328,6 +328,7 @@ module Equ
 !
         call density_after_mn(f, df, mass_per_proc)
         call magnetic_after_mn(df)
+        call check_curla_consistency(f, caller='pde')
 !
         call timing('pde','after the end of the mn_loop')
 !
