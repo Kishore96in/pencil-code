@@ -1057,7 +1057,7 @@ endsubroutine helper_loop
 !  time step even if we didn't read ghost zones.
 !
   call update_ghosts(f)
-  call check_curla_consistency(f, caller='run.f90 before timeloop')
+!   call check_curla_consistency(f, caller='run.f90 before timeloop') !aux slots are not populated here (only done while calculating the pencils)
 !
 !  Allow here for the possibility to have spectral output
 !  from the first time. This works for all variables, except
