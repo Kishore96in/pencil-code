@@ -552,12 +552,12 @@ outer:do ikz=1,nz
           !1. ghosts are updated
           !2. no values match between f(ibb) and a1
           !3. there is no mismatch between curl and curli (checked in hydro_before_boundary)
-          !4. There is no mismatch between curl_mn and curl_other (checked in calc_pencils_magnetic_pencpar; contradicts Chao-Chin's comment in commit 5416c8fff127e2a0825812726f26eb0d85773ca5)
+          !4. There is no mismatch between curl_mn, curl_other, and curl (checked in calc_pencils_magnetic_pencpar; contradicts Chao-Chin's comment in commit 5416c8fff127e2a0825812726f26eb0d85773ca5)
           !
           !some checks
           if (.not. all(findloc(a1,f(l1,m1,n1,ibb+ivec-1)) == 0)) then
             !If this is not triggered, it means that we are not simply facing an indexing issue!
-            call fatal_Error('power_parallel_portion', 'index offset between a1 and f')
+            call fatal_error('power_parallel_portion', 'index offset between a1 and f')
           endif
           if (any(f(l1:l2,m1:m2,n1:n2,ibb+ivec-1) == a1)) then
             !a check that will fail if the code is correctly working
