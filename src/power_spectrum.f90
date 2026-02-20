@@ -454,7 +454,7 @@ outer:do ikz=1,nz
     use Fourier, only: fft_xyz_parallel
     use Mpicomm, only: mpireduce_sum
     use General, only: itoa
-    use Sub, only: curli
+    use Sub, only: curli, check_curla_consistency
     use File_io, only: file_exists
 !
     real, dimension (mx,my,mz,mfarray) :: f
@@ -529,6 +529,8 @@ outer:do ikz=1,nz
           call fatal_error('power_parallel_portion', 'y ghosts not updated for az')
         if (.not. all(f(l1:l2,m1:m2,1:6,iaz) == f(l1:l2,m1:m2,n2-2:n2+3,iaz))) &
           call fatal_error('power_parallel_portion', 'z ghosts not updated for az')
+        !
+        call check_curla_consistency(f, caller='power_parallel_portion') !debug
         !END debug
         !$omp do collapse(2)
         do n_loc=n1,n2
