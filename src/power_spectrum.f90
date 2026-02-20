@@ -521,17 +521,30 @@ outer:do ikz=1,nz
           print*,'KISHORE: power_parallel_portion'
           print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
           print*,'a1(1:2,1,1)', a1(1:2,1,1)
+          print*,'a1(1:6,1,1)', a1(1:6,1,1)
           print*,'--------------------'
           !DANGER: above is wrong even though the ghosts have been correctly updated!
           !sanity checks below assume periodic BCs
-          if (.not. all(f(1:6,m1,n1,iax) == f(l2-2:l2+3,m1,n1,iax))) &
+          if (.not. all(f(1:6,m1:m2,n1:n2,iax) == f(l2-2:l2+3,m1:m2,n1:n2,iax))) &
             call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
-          if (.not. all(f(1:6,m1,n1,iay) == f(l2-2:l2+3,m1,n1,iay))) &
+          if (.not. all(f(l1:l2,1:6,n1:n2,iax) == f(l1:l2,m2-2:m2+3,n1:n2,iax))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
+          if (.not. all(f(l1:l2,m1:m2,1:6,iax) == f(l1:l2,m1:m2,n2-2:n2+3,iax))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ax')
+          !
+          if (.not. all(f(1:6,m1:m2,n1:n2,iay) == f(l2-2:l2+3,m1:m2,n1:n2,iay))) &
             call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
-          if (.not. all(f(1:6,m1,n1,iaz) == f(l2-2:l2+3,m1,n1,iaz))) &
+          if (.not. all(f(l1:l2,1:6,n1:n2,iay) == f(l1:l2,m2-2:m2+3,n1:n2,iay))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
+          if (.not. all(f(l1:l2,m1:m2,1:6,iay) == f(l1:l2,m1:m2,n2-2:n2+3,iay))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for ay')
+          !
+          if (.not. all(f(1:6,m1:m2,n1:n2,iaz) == f(l2-2:l2+3,m1:m2,n1:n2,iaz))) &
             call fatal_error('power_parallel_portion', 'ghosts not updated for az')
-          if (.not. all(f(l1,1:6,n1,iax) == f(l1,m2-2:m2+3,n1,iax))) &
-            call fatal_error('power_parallel_portion', 'ghosts not updated along y')
+          if (.not. all(f(l1:l2,1:6,n1:n2,iaz) == f(l1:l2,m2-2:m2+3,n1:n2,iaz))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
+          if (.not. all(f(l1:l2,m1:m2,1:6,iaz) == f(l1:l2,m1:m2,n2-2:n2+3,iaz))) &
+            call fatal_error('power_parallel_portion', 'ghosts not updated for az')
         endif
         !END debug
       elseif (trim(sp)=='a') then
