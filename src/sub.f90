@@ -9408,6 +9408,8 @@ if (notanumber(f(ll,mm,2:mz-2,iff))) print*, 'DIFFZ:k,ll,mm=', k,ll,mm
       real, dimension(nx,ny,nz,3) :: bb
       integer :: i
 !
+      if (lpencil_check_at_work) return
+!
       if (ibb==0) call fatal_error('check_curla_consistency', 'need lbb_as_aux=T')
 !
       do n=n1,n2; do m=m1,m2; do i=1,3
