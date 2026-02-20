@@ -120,6 +120,8 @@ module Sub
   public :: calc_scl_factor
   public :: get_dxyzs
 !
+  public :: check_curla_consistency
+!
   interface poly                ! Overload the `poly' function
     module procedure poly_0
     module procedure poly_1
@@ -9393,4 +9395,39 @@ if (notanumber(f(ll,mm,2:mz-2,iff))) print*, 'DIFFZ:k,ll,mm=', k,ll,mm
 
     endsubroutine check_for_nans_globally
 !***********************************************************************    
+    subroutine check_curla_consistency(f, caller)
+!
+!     Check that curl(f(...,iaa)) == f(...,ibb).
+!     Assumes ghost cells have already been correctly updated.
+!
+!     TODO: call this at various locations before power_parallel_portion is called to figure out when the two start to not match.
+!
+      real, dimension(mx,my,mz,mfarray), intent(in) :: f
+      character (len=*), optional :: caller
+!
+      real, dimension(nx,ny,nz,3) :: bb
+      integer :: i
+!
+      if (ibb==0) call fatal_error('check_curla_consistency', 'need lbb_as_aux=T')
+!
+      do n=n1,n2; do m=m1,m2; do i=1,3
+        call curli(f, iaa, bb(:,m-nghost,n-nghost,i), i)
+      enddo; enddo; enddo
+!
+      if (.not. all(bb == f(l1:l2,m1:m2,n1:n2,ibb:ibb+2))) then
+        if (present(caller)) then
+          call fatal_error('check_curla_consistency', 'mismatch in '//trim(caller))
+        else
+          call fatal_error('check_curla_consistency', 'mismatch')
+        endif
+      else
+        if (present(caller)) then
+          print*,'check_curla_consistency: success in '//trim(caller)
+        else
+          print*,'check_curla_consistency: success'
+        endif
+      endif
+!
+    endsubroutine check_curla_consistency
+!***********************************************************************
 endmodule Sub
