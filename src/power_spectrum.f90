@@ -1059,14 +1059,18 @@ outer:do ikz=1,nz
       !$omp workshare
       ar =f(l1:l2,m1:m2,n1:n2,iux+ivec-1)
       !BEGIN debug
-      !trying to see if ar is being correctly calculated.
-      print*,'--------------------'
-      print*,'KISHORE: comp_spectrum_xy'
-      print*,'uu(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,iuu+ivec-1)
-      print*,'ar(1:2,1,1)', ar(1:2,1,1)
-      print*,'maxdiff=',maxval(abs(f(l1:l2,m1:m2,n1:n2,iuu+ivec-1) - ar))
-      print*,'--------------------'
+!       !trying to see if ar is being correctly calculated.
+!       print*,'--------------------'
+!       print*,'KISHORE: comp_spectrum_xy'
+!       print*,'uu(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,iuu+ivec-1)
+!       print*,'ar(1:2,1,1)', ar(1:2,1,1)
+!       print*,'maxdiff=',maxval(abs(f(l1:l2,m1:m2,n1:n2,iuu+ivec-1) - ar))
+!       print*,'--------------------'
+      if (maxval(abs(f(l1:l2,m1:m2,n1:n2,iuu+ivec-1) - ar)) /= 0) then
+        call fatal_error('comp_spectrum_xy', 'uu: mismatch between ar and f(iuu)')
+      endif
       !END debug
+      
       !$omp end workshare
     elseif (sp=='rho') then
       !$omp workshare
@@ -1084,16 +1088,16 @@ outer:do ikz=1,nz
         call curli(f,iaa,ar(:,m-nghost,n-nghost),ivec)
       enddo
       enddo
-      !BEGIN debug
-      !trying to see if ar is being correctly calculated.
-      if (ibb/=0) then
-        print*,'--------------------'
-        print*,'KISHORE: comp_spectrum_xy'
-        print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
-        print*,'ar(1:2,1,1)', ar(1:2,1,1)
-        print*,'--------------------'
-      endif
-      !END debug
+!       !BEGIN debug
+!       !trying to see if ar is being correctly calculated.
+!       if (ibb/=0) then
+!         print*,'--------------------'
+!         print*,'KISHORE: comp_spectrum_xy'
+!         print*,'bb_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ibb+ivec-1)
+!         print*,'ar(1:2,1,1)', ar(1:2,1,1)
+!         print*,'--------------------'
+!       endif
+!       !END debug
     elseif (sp=='a') then
       !$omp workshare
       ar = f(l1:l2,m1:m2,n1:n2,iax+ivec-1)
@@ -1118,16 +1122,16 @@ outer:do ikz=1,nz
         endif
       enddo
       enddo
-      !BEGIN debug
-      !trying to see if ar is being correctly calculated.
-      if (ioo/=0) then
-        print*,'--------------------'
-        print*,'KISHORE: comp_spectrum_xy'
-        print*,'oo_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ioo+ivec-1)
-        print*,'ar(1:2,1,1)', ar(1:2,1,1)
-        print*,'--------------------'
-      endif
-      !END debug
+!       !BEGIN debug
+!       !trying to see if ar is being correctly calculated.
+!       if (ioo/=0) then
+!         print*,'--------------------'
+!         print*,'KISHORE: comp_spectrum_xy'
+!         print*,'oo_aux(l1:l1+1,m1,n1,ivec)', f(l1:l1+1,m1,n1,ioo+ivec-1)
+!         print*,'ar(1:2,1,1)', ar(1:2,1,1)
+!         print*,'--------------------'
+!       endif
+!       !END debug
     else
       call fatal_error('comp_spectrum_xy',"no such sp: "//trim(sp))
     endif
