@@ -3965,16 +3965,17 @@ module Hydro
 !  15-dec-10/MR: adapted from density for homogeneity
 !  19-oct-15/ccyang: add calculation of the vorticity field.
 !
-      use Sub, only: curl, remove_mean
+      use Sub, only: curl, remove_mean, curli
       use Mpicomm, only: mpiallreduce_sum
 !
       real, dimension (mx,my,mz,mfarray), intent(inout) :: f
 !
-      real, dimension(nx,3) :: pv
+      real, dimension(nx,3) :: pv, tmp
 !
       real, dimension (mx,mz) :: fsum_tmp_cyl
       real, dimension (mx,my) :: fsum_tmp_sph
       real, dimension (mx) :: uphi
+      integer :: i
 !
 !  Remove mean momenta or mean flows if desired.
 !  Useful to avoid unphysical winds, for example in shearing box simulations.
@@ -3995,6 +3996,15 @@ module Hydro
           do m = m1, m2
             call curl(f, iux, pv)
             f(l1:l2,m,n,iox:ioz) = pv
+            !BEGIN debug
+            do i=1,3
+              call curli(f, iux, tmp(:,i), i)
+            enddo
+            if (.not. all(tmp == pv)) then
+              print*,'m,n=',m,n
+              call fatal_error('hydro_before_boundary', 'mismatch between curl and curli')
+            endif
+            !END debug
           enddo
         enddo
       endif
