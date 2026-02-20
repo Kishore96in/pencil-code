@@ -8,6 +8,7 @@ module Equ
   use Messages
   use Boundcond
   use Grid, only: calc_pencils_grid, get_grid_mn
+  use Sub, only: check_curla_consistency
 
   implicit none
 !
@@ -1392,6 +1393,8 @@ module Equ
         lfirstpoint=.false.
 !
       enddo mn_loop
+!
+      call check_curla_consistency(f, caller='rhs_cpu')
 !
       if (ltime_integrals.and.llast) then
         if (lhydro) call update_for_time_integrals_hydro
