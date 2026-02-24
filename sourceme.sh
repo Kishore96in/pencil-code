@@ -63,6 +63,9 @@ if [ -z $_sourceme ]; then	# called for the first time?
     #  Set path for DX macros
     DXMACROS="${PENCIL_HOME}/dx/macros${DXMACROS:+:$DXMACROS}"
 
+    # Path for Paraview plugins
+    PV_PLUGIN_PATH="${PENCIL_HOME}/paraview${PV_PLUGIN_PATH:+:$PV_PLUGIN_PATH}"
+
     #  Set IDL path
     IDL_PATH="./idl:../idl:+${PENCIL_HOME}/idl:./data:./tmp:${IDL_PATH=<IDL_DEFAULT>}"
 
