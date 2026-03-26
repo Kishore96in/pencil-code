@@ -284,7 +284,7 @@ END_HEAD
    :widths: 25 75
 
    * - Variable
-   * - Meaning
+     - Meaning
 END_HEAD
 
         # Loop through variables
