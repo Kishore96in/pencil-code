@@ -299,8 +299,8 @@ END_HEAD
             $doc =~ s{\n}{ }g;
 
             $text .= << "END_VAR";
-  * - *$var*
-    - $doc
+   * - *$var*
+     - $doc
 END_VAR
         }
 
