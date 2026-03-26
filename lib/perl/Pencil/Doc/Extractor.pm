@@ -298,6 +298,16 @@ END_HEAD
             # convert to single line
             $doc =~ s{\n}{ }g;
 
+            # MathJax is more picky than LaTeX with spaces and formatting. Fix some common issues...
+            # Copied from doc/readthedocs/fortran_rst_generator.py:process_diag
+            $doc =~ s/\$(.*?)\$/:math:`$1`/g;
+            $doc =~ s/\\rm/\\mathrm/g;
+            $doc =~ s/\\quad/:math:`\\quad` /g;
+            $doc =~ s/:math:`(.*?)`/:math:`$1` /g;
+            $doc =~ s/:math:` /:math:`/g;
+            $doc =~ s/(\w):math:/$1 :math:/g;
+            $doc =~ s/} `/}/g;
+
             $text .= << "END_VAR";
    * - *$var*
      - $doc
