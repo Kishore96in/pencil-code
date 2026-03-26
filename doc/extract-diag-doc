@@ -229,6 +229,55 @@ $mod_doc->write_to_file({ file       => 'inlinedoc-modules.tex',
                           print_empty  => 0,
                           descr_width   => '0.6',
                         });
+
+#ReST output for readthedocs
+#TODO: these files should go in readthedocs/code/tables
+my $rst_loc = 'readthedocs/code/tables';
+$diag_doc->write_to_file({ file        => "$rst_loc/print.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'print.in',
+                           format      => 'rst',
+                        });
+$phiavg_doc->write_to_file({ file        => "$rst_loc/phiaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'phiaver.in',
+                           format      => 'rst',
+                        });
+$xyavg_doc->write_to_file({ file        => "$rst_loc/xyaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'xyaver.in',
+                           format      => 'rst',
+                        });
+$xzavg_doc->write_to_file({ file        => "$rst_loc/xzaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'xzaver.in',
+                           format      => 'rst',
+                        });
+$yzavg_doc->write_to_file({ file        => "$rst_loc/yzaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'yzaver.in',
+                           format      => 'rst',
+                        });
+$yavg_doc->write_to_file({ file        => "$rst_loc/yaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'yaver.in',
+                           format      => 'rst',
+                        });
+$zavg_doc->write_to_file({ file        => "$rst_loc/zaver.in.rst",
+                           sort_files  => 1,
+                           print_empty => 0,
+                           infile_name => 'zaver.in',
+                           format      => 'rst',
+                        });
+#TODO: fortran_rst_generator puts bcx,bxy,bcz in the same file, as three separate sections.
+#TODO: $param_doc
+#TODO: $mod_doc
 # ---------------------------------------------------------------------- #
 sub get_src_files {
 # Construct list of .f90 source files
