@@ -212,6 +212,92 @@ sub longtable {
 
 }
 
+sub rst_table {
+#
+#   $doc->rst_table()
+#   $doc->rst_table(sort_files    => 1/0,
+#                   print_empty   => 0/1,
+#                   infile_name   => 'print.in', #name to print in header
+#                   )
+#
+# Output docstrings in rst format (for readthedocs)
+#
+    my $self = shift;
+    my @args = @_;
+
+    my %args;
+    # Parse arguments (sort_files => <true/false>, etc.); may be hash or hashref
+    if (ref($args[0]) eq 'HASH') { # longtable($hashref)
+        %args = %{$args[0]};
+    } else {                    # longtable(%hash)
+        %args = @args;
+    }
+
+    my $docref = $self->{DOC};
+    my @files = keys %$docref;
+
+    my $sort = 1;
+    $sort = $args{sort_files} if defined $args{sort_files};
+
+    my $print_empty = $args{print_empty} || 0;
+
+    # Sort file names in pre-defined order
+    if ($sort) {
+        @files = sort { $self->smart_compare($a, $b) } @files;
+    }
+
+    #header
+    my $infile_name = $args{infile_name} or croak "for rst output, infile_name must be specified\n";
+    my $text = $self->underline_for_rst(
+        "List of parameters for ``$infile_name``",
+        '=',
+        1,
+        );
+    $text .= <<"END_HEAD";
+
+.. raw:: html
+
+   <div>Filter: <input type='text' id='customvarsearch' /></div><br/>
+
+END_HEAD
+
+    foreach my $module (@files) {
+        # Header line for each section of table
+        $text .= "\n";
+        $text .= $self->underline_for_rst("Module *$module*", '~');
+        $text .= << "END_HEAD";
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Variable
+   * - Meaning
+END_HEAD
+
+        # Loop through variables
+        my @file_docs = @{$docref->{$module}};
+        foreach my $vardocref (@file_docs) {
+            my $var = $vardocref->{var};
+            my $doc = $vardocref->{doc};
+
+            next unless ($print_empty || $doc =~ /\S/);
+
+            # convert to single line
+            $doc =~ s{\n}{ }g;
+
+            $text .= << "END_VAR";
+  * - *$var*
+    - $doc
+END_VAR
+        }
+
+    $text .= "\n";
+    }
+
+    return $text;
+}
+
 # ---------------------------------------------------------------------- #
 # Utility subroutines (internal use only)
 # ---------------------------------------------------------------------- #
@@ -515,6 +601,25 @@ sub printable_substring {
     substr($string,-3,3) = '...' if ($length<$oldlen);
 
     return $string;
+}
+
+# ---------------------------------------------------------------------- #
+
+sub underline_for_rst {
+    my $self = shift;
+    my $string = shift;
+    my $char = shift;
+    my $overline = shift || 0; #whether to also draw an overline
+
+    my $underline = "$char" x length($string);
+    my $text = <<"END_TEXT";
+$string
+$underline
+END_TEXT
+    if ($overline) {
+        $text = "$underline\n" . $text;
+    }
+    return $text
 }
 
 # ---------------------------------------------------------------------- #
