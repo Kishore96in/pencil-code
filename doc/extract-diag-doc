@@ -231,7 +231,6 @@ $mod_doc->write_to_file({ file       => 'inlinedoc-modules.tex',
                         });
 
 #ReST output for readthedocs
-#TODO: these files should go in readthedocs/code/tables
 my $rst_loc = 'readthedocs/code/tables';
 $diag_doc->write_to_file({ file        => "$rst_loc/print.in.rst",
                            sort_files  => 1,
