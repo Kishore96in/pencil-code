@@ -1,0 +1,14 @@
+Directory:
+    ${PENCIL_HOME}/samples/conv-slab-noequi-upw
+SVN Id:
+    $Id$
+Maintainer:
+    Kishore <kishore96[dot]work/gmail[dot]com>
+Added:
+    21-Apr-2026
+Status:
+    failing # One of [succeeds|failing since <date>|obsolete| ...]
+Comments:
+    Variant of conv-slab-noequi to test upwinding
+    Fails since I have not changed the reference data yet.
+
