@@ -1,0 +1,41 @@
+!  -*-f90-*-  (for Emacs)    vim:set filetype=fortran:  (for vim)
+!
+! Run parameters
+!
+&run_pars
+  cvsid='$Id$'
+  nt=41, it1=10, isave=200, itorder=3
+  dsnap=20., dvid=0.2
+  cdtv=0.30, cdt=0.4
+  lpencil_check=T
+  lproper_averages=T !required for nonequidistant grids
+  d2davg=0.2
+/
+&eos_run_pars
+/
+&hydro_run_pars
+  Omega=0.1
+  theta=0.
+  lupw_uu=T
+/
+&density_run_pars
+  lupw_lnrho=T
+/
+&grav_run_pars
+  gravz_profile='const',gravz=-1.
+/
+&entropy_run_pars
+  Luminosity=0.
+  wheat=0.1
+  cool=15.
+  wcool=0.2,
+
+  iheatcond='K-profile'
+  hcond0=8.e-3
+
+  lupw_ss=T
+/
+&viscosity_run_pars
+  ivisc='nu-const'
+  nu=4e-3
+/
