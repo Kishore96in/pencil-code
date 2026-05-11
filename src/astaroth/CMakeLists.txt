@@ -2,7 +2,8 @@
 # V3.9 required for first-class CUDA support
 # V3.17 required for the FindCUDAToolkit package
 # V3.18 required for CMAKE_CUDA_ARCHITECTURES
-cmake_minimum_required(VERSION 3.19)
+# V3.24 required for CUDA_ARCHITECTURES=native
+cmake_minimum_required(VERSION 3.24)
 
 ## Options
 option(DOUBLE_PRECISION       "Generates double precision code."                           ON)
@@ -61,7 +62,7 @@ elseif (NOT USE_HIP AND CUDAToolkit_FOUND)
     ##TP: do not set GPU architectures to speedup debug compilations
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     else()
-    	set(CMAKE_CUDA_ARCHITECTURES "60;61;70;80")
+    	set(CMAKE_CUDA_ARCHITECTURES "native")
     endif()
     message(STATUS "Enabled CUDA architectures (Astaroth): " ${CMAKE_CUDA_ARCHITECTURES})
 elseif (USE_HIP OR HIP_FOUND)
