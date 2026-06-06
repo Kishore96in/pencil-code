@@ -122,12 +122,15 @@ sub write_to_file {
 #   $doc->write_to_file(file          => 'filename',
 #                       sort_files    => 1/0,
 #                       print_empty   => 0/1,
+#                       format        => 'latex'/'rst',
+#                       #Following are used for latex output only
 #                       descr_width   => '0.7',
 #                       selfcontained => 0/1,
+#                       #Following are used for rst output only
+#                       infile_name   => 'print.in' or similar,
 #                       )
 #
-# Write LaTeX {longtable} environment of docstrings to given file.
-# Convenience wrapper to call the function specified by writer.
+# Write docstrings to given file in either LaTeX or ReST format.
 #
     my $self = shift();
     my @args = @_;
@@ -139,10 +142,19 @@ sub write_to_file {
         %args = @args;
     }
 
+    my $format = $args{format} || 'latex';
+
     my $file = $args{file} or croak "write_to_file() needs a <file> argument";
     open(my $fh, "> $file") or croak "Cannot open $file for writing: $!";
-    
-    print $fh $self->longtable(@args);
+
+    if ($format eq 'latex') {
+        print $fh $self->longtable(@args);
+    } elsif ($format eq 'rst') {
+        print $fh $self->rst_table(@args);
+    } else {
+        croak "write_to_file: unknown format $format\n";
+    }
+
     close $fh;
 }
 
