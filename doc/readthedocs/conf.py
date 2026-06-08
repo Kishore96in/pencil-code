@@ -18,6 +18,7 @@ import glob
 import datetime
 sys.path.append(os.getcwd())
 from fortran_rst_generator import create_fortran_modules_rst, process_all_pcparam, process_bin_files, process_papers
+import subprocess
 
 # Import all git history
 # Kishore: this unexpectedly changes the state of the user's repository if they are trying to build locally. If shallow clones are causing problems in your CI, is it not better to configure your CI to always do a full clone?
@@ -412,7 +413,11 @@ fortran_src = create_fortran_modules_rst("../../src")
 fortran_ext = ["f90"]
 
 # Generate all rst files for the Fortran parameters table
-process_all_pcparam()
+reinvent_wheel = True # TODO: is there some way to set this based on options passed to sphinx-build? Worst case, set it via an environment variable. https://stackoverflow.com/questions/50738353/how-to-get-the-config-value-in-sphinx-extension-written-by-me
+if reinvent_wheel:
+    process_all_pcparam()
+else:
+    p = subprocess.run(["extract-diag-doc", ], cwd="..", check=True)
 
 # Generate list of scripts
 process_bin_files()
