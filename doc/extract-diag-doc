@@ -277,9 +277,10 @@ $zavg_doc->write_to_file({ file        => "$rst_loc/zaver.in.rst",
                            infile_name => 'zaver.in',
                            format      => 'rst',
                         });
-#TODO: fortran_rst_generator puts bcx,bxy,bcz in the same file, as three separate sections.
+#TODO: fortran_rst_generator puts bcx,bxy,bcz in the same file (boundary.rst), as three separate sections. Since I have control over index.rst, might as well let that be three separate files.
 #TODO: $param_doc
-#TODO: $mod_doc
+#TODO: $mod_doc (perhaps not needed since I think that is done via the fortran autodoc stuff).
+#TODO: index.rst containing links to all the other stuff
 # ---------------------------------------------------------------------- #
 sub get_src_files {
 # Construct list of .f90 source files
