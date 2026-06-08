@@ -1,6 +1,7 @@
 # Makefile for ING Sphinx documentation
 export SHELL:=/bin/bash
 export SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
+export REINVENT_WHEEL="true"
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
