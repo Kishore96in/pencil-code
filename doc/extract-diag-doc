@@ -61,6 +61,8 @@ use Getopt::Long;
 # Allow for `-Plp' as equivalent to `-P lp' etc:
 Getopt::Long::config("bundling");
 
+use File::Path qw(make_path);
+
 my (%opts);                     # Options hash for GetOptions
 my $doll='\$';                  # Need this to trick CVS
 
@@ -232,6 +234,7 @@ $mod_doc->write_to_file({ file       => 'inlinedoc-modules.tex',
 
 #ReST output for readthedocs
 my $rst_loc = 'readthedocs/code/tables';
+make_path $rst_loc;
 $diag_doc->write_to_file({ file        => "$rst_loc/print.in.rst",
                            sort_files  => 1,
                            print_empty => 0,
