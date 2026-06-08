@@ -278,8 +278,33 @@ $zavg_doc->write_to_file({ file        => "$rst_loc/zaver.in.rst",
                            infile_name => 'zaver.in',
                            format      => 'rst',
                         });
-#TODO: $bc{x,y,z}_doc
-#TODO: $param_doc
+#TODO: check if below outputs are acceptable; should change the 'variable' column header to 'value' (and similarly, 'list of parameters' -> 'list of values'.
+$bcx_doc->write_to_file({ file        => "$rst_loc/bcx.rst",
+                          sort_files  => 1,
+                          print_empty => 0,
+                          #TODO: I suppose it would be better to replace infile_name by a 'title' kwarg.
+                          infile_name => 'bcx',
+                          format      => 'rst',
+                        });
+$bcy_doc->write_to_file({ file        => "$rst_loc/bcy.rst",
+                          sort_files  => 1,
+                          print_empty => 0,
+                          infile_name => 'bcy',
+                          format      => 'rst',
+                        });
+$bcz_doc->write_to_file({ file        => "$rst_loc/bcz.rst",
+                          sort_files  => 1,
+                          print_empty => 0,
+                          infile_name => 'bcz',
+                          format      => 'rst',
+                        });
+#TODO: implement below
+# $param_doc->write_to_file({ file        => "$rst_loc/namelist.rst",
+#                             sort_files  => 1,
+#                             print_empty => 0,
+#                             infile_name => 'start.in/run.in',
+#                             format      => 'rst',
+#                           });
 #TODO: $mod_doc (perhaps not needed since I think that is done via the fortran autodoc stuff).
 
 open INDEXFILE, ">", "$rst_loc/index.rst";
@@ -290,8 +315,7 @@ Parameters and diagnostics
 .. toctree::
    :maxdepth: 1
 
-   init
-   run
+   namelists
    print.in
    phiaver.in
    xyaver.in
