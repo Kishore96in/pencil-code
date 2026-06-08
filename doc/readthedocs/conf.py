@@ -414,10 +414,10 @@ fortran_ext = ["f90"]
 
 # Generate all rst files for the Fortran parameters table
 #TODO: Ideally, this would be set via an option passed to sphinx-build.
-if "DONT_REINVENT_WHEEL" in os.environ:
-    p = subprocess.run(["extract-diag-doc", ], cwd="..", check=True)
-else:
+if os.environ.get("REINVENT_WHEEL", "true") == "true":
     process_all_pcparam()
+else:
+    p = subprocess.run(["./extract-diag-doc", ], cwd="..", check=True)
 
 # Generate list of scripts
 process_bin_files()
