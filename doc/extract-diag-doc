@@ -233,6 +233,7 @@ $mod_doc->write_to_file({ file       => 'inlinedoc-modules.tex',
                         });
 
 #ReST output for readthedocs
+#TODO: probably best to make rst output optional (controlled by a command-line switch), or perhaps put the rst stuff into a separate script.
 my $rst_loc = 'readthedocs/code/tables';
 make_path $rst_loc;
 $diag_doc->write_to_file({ file        => "$rst_loc/print.in.rst",
