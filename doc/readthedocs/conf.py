@@ -413,11 +413,11 @@ fortran_src = create_fortran_modules_rst("../../src")
 fortran_ext = ["f90"]
 
 # Generate all rst files for the Fortran parameters table
-reinvent_wheel = True # TODO: is there some way to set this based on options passed to sphinx-build? Worst case, set it via an environment variable. https://stackoverflow.com/questions/50738353/how-to-get-the-config-value-in-sphinx-extension-written-by-me
-if reinvent_wheel:
-    process_all_pcparam()
-else:
+#TODO: Ideally, this would be set via an option passed to sphinx-build.
+if "DONT_REINVENT_WHEEL" in os.environ:
     p = subprocess.run(["extract-diag-doc", ], cwd="..", check=True)
+else:
+    process_all_pcparam()
 
 # Generate list of scripts
 process_bin_files()
