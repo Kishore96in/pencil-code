@@ -18,33 +18,9 @@ const bool AC_lpencil_check_at_work__mod__cdata = false
 const int AC_xtop__mod__equationofstate=nx
 #include "../../../cparam_pencils.inc_c.h"
 
-#undef AC_nx
-#undef AC_ny
-#undef AC_nz
-
-#define AC_nx nx
-#define AC_ny ny
-#define AC_nz nz
-
-#define AC_nxgrid nxgrid
-#define AC_nygrid nxgrid
-#define AC_nzgrid nxgrid
-
-#define AC_nxgrid__mod__cparam nxgrid
-#define AC_nygrid__mod__cparam nxgrid
-#define AC_nzgrid__mod__cparam nxgrid
-
-#undef AC_mx
-#undef AC_my
-#undef AC_mz
-
-#define AC_mx mx 
-#define AC_my my 
-#define AC_mz mz 
-
-#define AC_n1 n1
-#define AC_m1 m1
-#define AC_l1 l1
+#define AC_nxgrid__mod__cparam AC_nxgrid
+#define AC_nygrid__mod__cparam AC_nygrid
+#define AC_nzgrid__mod__cparam AC_nzgrid
 
 #define nhless AC_nhless__mod__hydro
 #define n_odevars AC_n_odevars__mod__cdata
