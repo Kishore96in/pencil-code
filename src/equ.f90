@@ -720,6 +720,7 @@ module Equ
       call init_reduc_pointers
 !
 !  If doing diagnostics together with the GPU lupdate_courant_dt means to calculate some of the timestep diagnostics
+!  Kishore: why do we need to check lgpu if this subroutine is only used for GPU runs?
 !
       if (lgpu) lupdate_courant_dt = lcourant_dt .and. ltimestep_diagnostics
 
