@@ -105,7 +105,10 @@ module Equ
 !  Print statements when they are first executed.
 !
       headtt = headt .and. lfirst .and. lroot
-      if (.not. lgpu) lupdate_courant_dt = lfirst .and. ldt .and. lcourant_dt
+!
+!  NOTE: ltimestep_diagnostics also controls output of Rmesh, which is meaningful even with fixed dt or with timestep_rkf.
+!
+      if (.not. lgpu) lupdate_courant_dt = lfirst .and. ((ldt .and. lcourant_dt) .or. ltimestep_diagnostics)
 !
       if (headtt.or.ldebug) print*,'pde: ENTER'
       if (headtt) call svn_id( &
@@ -722,7 +725,7 @@ module Equ
 !  If doing diagnostics together with the GPU lupdate_courant_dt means to calculate some of the timestep diagnostics
 !  Kishore: why do we need to check lgpu if this subroutine is only used for GPU runs?
 !
-      if (lgpu) lupdate_courant_dt = lcourant_dt .and. ltimestep_diagnostics
+      if (lgpu) lupdate_courant_dt = lcourant_dt .or. ltimestep_diagnostics
 
 !$omp parallel if (.not. lsuppress_parallel_reductions) private(p) num_threads(num_helper_threads) &
 !$omp copyin(t,dxmax_pencil,fname,fnamex,fnamey,fnamez,fnamer,fnamexy,fnamexz,fnamerz,fname_keep,fname_sound,ncountsz,phiavg_norm)
