@@ -1234,24 +1234,24 @@ module Equ
 !
 !  Diagnostics showing how close to advective and diffusive time steps we are
 !
-        if (lupdate_courant_dt.and.(.not.ldt_paronly).and.ldiagnos) then
-          if (idiag_dtv/=0) call max_mn_name(maxadvec/cdt,idiag_dtv,l_dt=.true.)
-          if (idiag_dtsrc/=0) call max_mn_name(maxsrc/cdtsrc,idiag_dtsrc,l_dt=.true.)
-          if (idiag_dtdiffus/=0) call max_mn_name(maxdiffus/cdtv,idiag_dtdiffus,l_dt=.true.)
-          if (idiag_dtdiffus2/=0) call max_mn_name(maxdiffus2/cdtv2,idiag_dtdiffus2,l_dt=.true.)
-          if (idiag_dtdiffus3/=0) call max_mn_name(maxdiffus3/cdtv3,idiag_dtdiffus3,l_dt=.true.)
+      if (lupdate_courant_dt.and.(.not.ldt_paronly).and.ldiagnos) then
+        if (idiag_dtv/=0) call max_mn_name(maxadvec/cdt,idiag_dtv,l_dt=.true.)
+        if (idiag_dtsrc/=0) call max_mn_name(maxsrc/cdtsrc,idiag_dtsrc,l_dt=.true.)
+        if (idiag_dtdiffus/=0) call max_mn_name(maxdiffus/cdtv,idiag_dtdiffus,l_dt=.true.)
+        if (idiag_dtdiffus2/=0) call max_mn_name(maxdiffus2/cdtv2,idiag_dtdiffus2,l_dt=.true.)
+        if (idiag_dtdiffus3/=0) call max_mn_name(maxdiffus3/cdtv3,idiag_dtdiffus3,l_dt=.true.)
 !
 !  Regular and hyperdiffusive mesh Reynolds numbers
 !
-          if (idiag_Rmesh/=0) call max_mn_name(pi_1*maxadvec/(maxdiffus+tini),idiag_Rmesh)
-          if (idiag_Rmesh3/=0) call max_mn_name(pi5_1*maxadvec/(maxdiffus3+tini),idiag_Rmesh3)
-          call max_mn_name(maxadvec,idiag_maxadvec)
-          call max_mn_name(maxdiffus,idiag_maxdiffus)
+        if (idiag_Rmesh/=0) call max_mn_name(pi_1*maxadvec/(maxdiffus+tini),idiag_Rmesh)
+        if (idiag_Rmesh3/=0) call max_mn_name(pi5_1*maxadvec/(maxdiffus3+tini),idiag_Rmesh3)
+        call max_mn_name(maxadvec,idiag_maxadvec)
+        call max_mn_name(maxdiffus,idiag_maxdiffus)
 !
 !  z-dependent timestep constraints
 !
-          call xymax_mn_name_z(maxadvec/cdt,idiag_dtvmaxz,l_dt=.true.)
-        endif
+        call xymax_mn_name_z(maxadvec/cdt,idiag_dtvmaxz,l_dt=.true.)
+      endif
 !
     endsubroutine timestep_diagnostics
 !***********************************************************************
