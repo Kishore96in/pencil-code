@@ -5520,7 +5520,7 @@ module Deriv
 !     26-mar-12/MR: coded dummy routine
 !     21-apr-2026/Kishore: working implementation
 !
-      use General, only: keep_compiler_quiet
+      use Quiet
 !
       real, dimension (mx,my,mz)          :: f
       real, dimension (nx)                :: df
