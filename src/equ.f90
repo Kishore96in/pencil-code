@@ -1266,7 +1266,7 @@ module Equ
 !
 !  z-dependent timestep constraints
 !
-        call xymax_mn_name_z(maxadvec/cdt,idiag_dtvmaxz,l_dt=.true.)
+        if (idiag_dtvmaxz/=0) call xymax_mn_name_z(maxadvec/cdt,idiag_dtvmaxz,l_dt=.true.)
       endif
 !
     endsubroutine timestep_diagnostics
