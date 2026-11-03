@@ -3498,7 +3498,7 @@ module Hydro
         call calc_pencils_hydro_nonlinear(f,p,lpenc_loc)
       endif
 ! advec_uu
-      if (lupdate_courant_dt.and.ladvection_velocity) then
+      if (lcalc_timestep_constraints.and.ladvection_velocity) then
         if (lmaximal_cdt) then
           p%advec_uu=max(abs(p%uu(:,1))*dline_1(:,1),&
                          abs(p%uu(:,2))*dline_1(:,2),&
@@ -3534,7 +3534,7 @@ module Hydro
 !
 !  ``uu/dx'' for timestep
 !
-      if (lupdate_courant_dt.and.ladvection_velocity) then
+      if (lcalc_timestep_constraints.and.ladvection_velocity) then
         !maxadvec=maxadvec+p%advec_uu
         maxadvec=max(maxadvec,p%advec_uu)
         if (headtt.or.ldebug) print*,'calc_pencils_hydro: max(advec_uu) =',maxval(p%advec_uu)
@@ -4749,7 +4749,7 @@ module Hydro
 !
 !  Fred: Option to constrain timestep for large forces
 !
-      if ( lupdate_courant_dt.and.(lcdt_tauf.or.ldiagnos.and.idiag_dtF/=0) .or. &
+      if ( lcalc_timestep_constraints.and.(lcdt_tauf.or.ldiagnos.and.idiag_dtF/=0) .or. &
            ldiagnos.and.idiag_taufmin/=0 ) then
 
         do j =1,3
@@ -4761,7 +4761,7 @@ module Hydro
         enddo
         do j=1,3
           ftot=abs(df(l1:l2,m,n,iux+j-1)*uu1(:,j))
-          if (lupdate_courant_dt.and.lcdt_tauf) dt1_max=max(dt1_max,ftot/cdtf)
+          if (lcalc_timestep_constraints.and.lcdt_tauf) dt1_max=max(dt1_max,ftot/cdtf)
           if (ldiagnos.and.(idiag_dtF/=0.or.idiag_taufmin/=0)) Fmax=max(Fmax,ftot)
         enddo
       endif
@@ -4801,7 +4801,9 @@ module Hydro
           uref=ampluu(1)*cos(kx_uu(1)*x(l1:l2))
           call sum_mn_name(p%u2-2.*p%uu(:,2)*uref+uref**2,idiag_durms)
         endif
-        if (lupdate_courant_dt.and.ladvection_velocity.and.idiag_dtu/=0) call max_mn_name(p%advec_uu/cdt,idiag_dtu,l_dt=.true.)
+        if (lcalc_timestep_constraints.and.ladvection_velocity.and.idiag_dtu/=0) then
+          call max_mn_name(p%advec_uu/cdt,idiag_dtu,l_dt=.true.)
+        endif
         if (.not.lmultithread) then
           if (idiag_dtF/=0) call max_mn_name(Fmax/cdtf,idiag_dtF,l_dt=.true.)
           call max_mn_name(Fmax,idiag_taufmin,lreciprocal=.true.)
