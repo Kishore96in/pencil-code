@@ -1753,7 +1753,7 @@ module Radiation
 !
 !  Time-step contribution from cooling.
 !
-        !if (lupdate_courant_dt) then
+        !if (lcalc_timestep_constraints) then
 !
 !  Choose less stringent time-scale of optically thin or thick cooling.
 !  This is currently not correct in the non-gray case!
@@ -2507,7 +2507,7 @@ module Radiation
 !  only advec here rest are in calc_rad_diffusion
 !
       if (lrad_cool_diffus.or.lrad_pres_diffus) then
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           advec_crad2=(16./3.)*p%rho1*(sigmaSB/c_light)*p%TT**4
           advec2=advec2+advec_crad2
           if (notanumber(advec_crad2)) print*, 'advec_crad2=',advec_crad2
@@ -2831,7 +2831,7 @@ module Radiation
 !  Include constraint from radiative time step
 !  (has to do with radiation pressure waves).
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
 !
 !  Check maximum diffusion from thermal diffusion.
 !  With heat conduction, the second-order term for leading entropy term
