@@ -4584,7 +4584,7 @@ module Solid_Cells
 !  Viscous heating and time step.
 !
 !        if (lpencil(i_visc_heat)) p%visc_heat=p%visc_heat+2*p%nu*p%sij2
-!        if (lupdate_courant_dt) p%diffus_total=p%diffus_total+p%nu
+!        if (lcalc_timestep_constraints) p%diffus_total=p%diffus_total+p%nu
 !
       endif
 !
