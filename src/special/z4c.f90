@@ -754,7 +754,7 @@ module Special
 !
 !  Time step: light speed and gauge speed along each direction.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         select case (lapse_type)
         case ('1+log'); tmp=max(1.,sqrt(2/q%alp))
         case ('harmonic'); tmp=max(1.,sqrt(harmonic_f))
