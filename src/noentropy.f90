@@ -311,7 +311,7 @@ module Energy
 !
 !  ``cs2/dx^2'' for timestep - but only if we are evolving hydrodynamics.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos.and.ldensity.and.lhydro) then
           p%advec_cs2=p%cs2*dxyz_2
           !Not generally true to set it here because of modules like photoelectric_dust
@@ -393,7 +393,7 @@ module Energy
       endif
       !    Have to do this here since important for some modules like photoelectric_dust
       !    (this overwrites the setting there)
-      if (lupdate_courant_dt .and. leos.and.ldensity.and.lhydro) advec_cs2=max(advec_cs2,p%advec_cs2)
+      if (lcalc_timestep_constraints .and. leos.and.ldensity.and.lhydro) advec_cs2=max(advec_cs2,p%advec_cs2)
 
       call calc_diagnostics_energy(f,p)
 !
