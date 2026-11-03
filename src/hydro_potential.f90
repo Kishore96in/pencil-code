@@ -1168,7 +1168,7 @@ module Hydro
         call calc_pencils_hydro_nonlinear(f,p,lpenc_loc)
       endif
 ! advec_uu
-      if (lupdate_courant_dt.and.ladvection_velocity) then
+      if (lcalc_timestep_constraints.and.ladvection_velocity) then
         if (lmaximal_cdt) then
           p%advec_uu=max(abs(p%uu(:,1))*dline_1(:,1),&
                          abs(p%uu(:,2))*dline_1(:,2),&
@@ -1686,7 +1686,7 @@ module Hydro
 !
 !  ``uu/dx'' for timestep
 !
-      if (lupdate_courant_dt.and.ladvection_velocity) then
+      if (lcalc_timestep_constraints.and.ladvection_velocity) then
         !maxadvec=maxadvec+p%advec_uu
         maxadvec=max(maxadvec,p%advec_uu)
         if (headtt.or.ldebug) print*,'duu_dt: max(advec_uu) =',maxval(p%advec_uu)
