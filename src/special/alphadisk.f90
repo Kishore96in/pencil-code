@@ -511,7 +511,7 @@ module Special
 !  Contribution to the time-step from diffusion.
 !  (should the wind also play a role?).
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         call get_nu(f,nu)
         maxdiffus=max(maxdiffus,nu*dxyz_2)
         if (headtt.or.ldebug) print*,'calc_pencils_special: max(diffus_special) =', maxval(nu*dxyz_2)
