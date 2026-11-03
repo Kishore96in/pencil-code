@@ -2700,7 +2700,7 @@ module Hydro
 !  uu/dx for timestep (if kinematic_flow is set)
 !
       if (kinematic_flow/='none') then
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           advec_uu=sum(abs(p%uu)*dline_1,2)
           !maxadvec=maxadvec+advec_uu
           maxadvec=max(maxadvec,advec_uu)
