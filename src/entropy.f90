@@ -3667,7 +3667,7 @@ module Energy
 !
 !  ``cs2/dx^2'' for timestep
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lhydro.and.ldensity) then
           if (lreduced_sound_speed) then
             if (lscale_to_cs2top) then
@@ -3685,7 +3685,7 @@ module Energy
 !
       if (lcool_prof_as_var) p%cool_prof=f(l1:l2,m,n,icool_prof)
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lhydro.and.ldensity) advec_cs2=max(advec_cs2,p%advec_cs2)
       endif
 !
@@ -3861,7 +3861,7 @@ module Energy
       if (lheatc_hyper3ss_mesh)  call calc_heatcond_hyper3_mesh(f,df)
       if (lheatc_hyper3ss_aniso) call calc_heatcond_hyper3_aniso(f,df)
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         maxdiffus=max(maxdiffus,diffus_chi)
         maxdiffus3=max(maxdiffus3,diffus_chi3)
       endif
@@ -3896,7 +3896,7 @@ module Energy
 !  Enforce maximum heating rate timestep constraint
 !
 
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lthdiff_Hmax.or.idiag_dtH/=0) then
           if (lthdiff_Hmax) then
             ssmax=max(ssmax,abs(df(l1:l2,m,n,iss))*p%cv1)
@@ -4395,7 +4395,7 @@ module Energy
 !
 ! Done here since with GPU, RHS is not evaluated and thus not diffus_chi.
 !
-      if (lmultithread .and. lupdate_courant_dt) then
+      if (lmultithread .and. lcalc_timestep_constraints) then
 
         if (idiag_dtdiffus/=0 .or. idiag_dtchi/=0) diffus_chi = 0.0
         if (lheatc_Kprof)    call calc_heatcond_arrays(f,p,thdiff)
@@ -4950,7 +4950,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*chi*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos_idealgas) then
           call get_gamma_etc(gamma)
           diffus_chi=diffus_chi+(gamma*chi)*dxyz_2
@@ -5077,7 +5077,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*chi*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos_idealgas) then
           call get_gamma_etc(gamma)
           diffus_chi=diffus_chi+(gamma*thchi+chi_t)*dxyz_2
@@ -5168,7 +5168,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*chi*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos_idealgas) then
           call get_gamma_etc(gamma)
           diffus_chi=diffus_chi+(gamma*rhochi+chi_t)*dxyz_2
@@ -5207,7 +5207,7 @@ module Energy
 !
 !  Check maximum diffusion from thermal diffusion.
 !
-      if (lupdate_courant_dt) diffus_chi3=diffus_chi3+chi_hyper3*dxyz_6
+      if (lcalc_timestep_constraints) diffus_chi3=diffus_chi3+chi_hyper3*dxyz_6
 !
     endsubroutine calc_heatcond_hyper3
 !***********************************************************************
@@ -5233,7 +5233,7 @@ module Energy
       call del6fj(f,chi_hyper3_aniso,iss,thdiff)
       df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss) + thdiff
 !
-      if (lupdate_courant_dt) &
+      if (lcalc_timestep_constraints) &
         diffus_chi3=diffus_chi3 + (chi_hyper3_aniso(1)*dline_1(:,1)**6 + &
                                    chi_hyper3_aniso(2)*dline_1(:,2)**6 + &
                                    chi_hyper3_aniso(3)*dline_1(:,3)**6)
@@ -5269,7 +5269,7 @@ module Energy
 !
       if (headtt) print*,'calc_heatcond_hyper3_polar: added thdiff'
 !
-      if (lupdate_courant_dt) diffus_chi3=diffus_chi3+chi_hyper3*pi4_1*dxmin_pencil**4
+      if (lcalc_timestep_constraints) diffus_chi3=diffus_chi3+chi_hyper3*pi4_1*dxmin_pencil**4
 !
     endsubroutine calc_heatcond_hyper3_polar
 !***********************************************************************
@@ -5306,7 +5306,7 @@ module Energy
 !
       if (headtt) print*,'calc_heatcond_hyper3_mesh: added thdiff'
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (ldynamical_diffusion) then
           diffus_chi3 = diffus_chi3 + chi_hyper3_mesh * sum(abs(dline_1),2)
           advec_hypermesh_ss = 0.0
@@ -5398,7 +5398,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*chi*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos_idealgas) then
           if (lchi_shock_density_dep) then
             if (lheatc_shock) &
@@ -5476,7 +5476,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*pchi*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (leos_idealgas) then
           call get_gamma_etc(gamma)
           diffus_chi=diffus_chi+(gamma*pchi_shock*p%shock)*dxyz_2
@@ -5544,7 +5544,7 @@ module Energy
 !  With heat conduction, the second-order term for entropy is
 !  gamma*chix*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         call get_gamma_etc(gamma)
         diffus_chi=diffus_chi+gamma*chix*dxyz_2
       endif
@@ -5637,7 +5637,7 @@ module Energy
 !
       df(l1:l2,m,n,iss)=df(l1:l2,m,n,iss) + thdiff
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         call get_gamma_etc(gamma)
         dt1_max=max(dt1_max,maxval(abs(thdiff)*gamma)/(cdts))
         diffus_chi=diffus_chi+p%cv1*Kgpara*exp(2.5*p%lnTT-p%lnrho)*dxyz_2
@@ -5679,7 +5679,7 @@ module Energy
         cosbgT=cosbgT/sqrt(gT2*b2)
       endwhere
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         diffus_chi=diffus_chi + cosbgT*p%cv1*Kgpara*exp(-p%lnrho)*dxyz_2
       endif
 !
@@ -5858,7 +5858,7 @@ module Energy
 !  NB: With heat conduction, the second-order term for entropy is
 !    gamma*chix*del2ss.
 !
-      if (lupdate_courant_dt) diffus_chi=diffus_chi+(p%cv1*Krho1+chi_t)*dxyz_2
+      if (lcalc_timestep_constraints) diffus_chi=diffus_chi+(p%cv1*Krho1+chi_t)*dxyz_2
 !
     endsubroutine calc_heatcond_kramers
 !***********************************************************************
@@ -5955,7 +5955,7 @@ module Energy
 !  NB: With heat conduction, the second-order term for entropy is
 !    gamma*chix*del2ss.
 !
-      if (lupdate_courant_dt) diffus_chi=diffus_chi+(p%cv1/p%cp1*chix)*dxyz_2
+      if (lcalc_timestep_constraints) diffus_chi=diffus_chi+(p%cv1/p%cp1*chix)*dxyz_2
 !
     endsubroutine calc_heatcond_smagorinsky
 !***********************************************************************
@@ -6121,7 +6121,7 @@ module Energy
 !  NB: With heat conduction, the second-order term for entropy is
 !    gamma*chix*del2ss.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (hcond0/=0..or.lread_hcond.or.lhcond_global) diffus_chi=diffus_chi+chix*dxyz_2
         if (chi_t/=0.) diffus_chi=diffus_chi+chi_t*chit_prof*dxyz_2
       endif
@@ -6250,7 +6250,7 @@ module Energy
 !
 !  Check maximum diffusion from thermal diffusion.
 !
-      if (lupdate_courant_dt) diffus_chi=diffus_chi+chi_t*dxyz_2
+      if (lcalc_timestep_constraints) diffus_chi=diffus_chi+chi_t*dxyz_2
 !
     endsubroutine calc_heatcond_sfluct
 !***********************************************************************
@@ -6424,7 +6424,7 @@ module Energy
 !
 !  Check maximum diffusion from thermal diffusion.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (chi_t0/=0..and.(lchit_total .or. lchit_mean)) diffus_chi=diffus_chi+chi_t0*chit_prof*dxyz_2
         if (lcalc_ssmean .or. lcalc_ssmeanxy .or. lss_running_aver) then
           if (chi_t1/=0..and.lchit_fluct) diffus_chi=diffus_chi+chit_prof_fluct*dxyz_2
@@ -7282,7 +7282,7 @@ module Energy
 !
       df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss)-rtv_cool
 !
-      if (lupdate_courant_dt) dt1_max=max(dt1_max,tmp)
+      if (lcalc_timestep_constraints) dt1_max=max(dt1_max,tmp)
 !
     endsubroutine calc_heat_cool_RTV
 !***********************************************************************
@@ -8173,7 +8173,7 @@ module Energy
 !
         df(l1:l2,m,n,iss) = df(l1:l2,m,n,iss) + newton
 !
-        if (lupdate_courant_dt) dt1_max=max(dt1_max,maxval(abs(newton)*gamma)/(cdts))
+        if (lcalc_timestep_constraints) dt1_max=max(dt1_max,maxval(abs(newton)*gamma)/(cdts))
       endif
 !
     endsubroutine newton_cool
