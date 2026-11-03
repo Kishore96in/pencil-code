@@ -456,7 +456,7 @@ module Density
 !
       penc = p%uu(:,3) * dlnrho0dz(n)
       df(l1:l2,m,n,irho) = df(l1:l2,m,n,irho) - p%ugrhos - p%rhos * (p%divu + penc)
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         src_density = abs(penc)
         maxsrc = max(maxsrc, src_density)
       endif
@@ -470,7 +470,7 @@ module Density
         call del2(f, irho, del2rhos)
         call dot_mn(p%gshock, p%grhos, penc)
         fdiff = fdiff + diffrho_shock * (p%shock * del2rhos + penc)
-        if (lupdate_courant_dt) diffus_diffrho = diffus_diffrho + diffrho_shock * dxyz_2 * p%shock
+        if (lcalc_timestep_constraints) diffus_diffrho = diffus_diffrho + diffrho_shock * dxyz_2 * p%shock
       endif shock
 !
 !  Mesh hyper-diffusion
@@ -480,7 +480,7 @@ module Density
           call der6(f, irho, penc, j, ignoredx=.true.)
           fdiff = fdiff + diffrho_hyper3_mesh * penc * dline_1(:,j)
         enddo dir
-        if (lupdate_courant_dt) diffus_diffrho3 = diffus_diffrho3 + diffrho_hyper3_mesh * sum(dline_1,2)
+        if (lcalc_timestep_constraints) diffus_diffrho3 = diffus_diffrho3 + diffrho_hyper3_mesh * sum(dline_1,2)
       endif hyper3
 !
       df(l1:l2,m,n,irho) = df(l1:l2,m,n,irho) + fdiff
