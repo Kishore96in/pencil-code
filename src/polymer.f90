@@ -445,7 +445,7 @@ module Polymer
 !
 ! Time step constraint from polymer diffusivity
 !
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           diffus_eta_poly=eta_poly*dxyz_2
           maxdiffus=max(maxdiffus,diffus_eta_poly)
           if (headtt.or.ldebug) print*, 'dpoly_dt: max(diffus_eta_poly) =', maxval(diffus_eta_poly)
@@ -454,7 +454,7 @@ module Polymer
 !
 ! Time step constraint from relaxation time of polymer
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
 !
         call max_mn(p%fr,frmax_local)
 !MR: max_mn used within the mn-loop produces a "running maximum" - tb simplified?
