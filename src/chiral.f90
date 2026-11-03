@@ -523,7 +523,7 @@ module Chiral
 !
 !  For the timestep calculation, need maximum diffusion
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         diffus_chiral=max(chiral_diffXX,chiral_diff)*dxyz_2
         if (headtt.or.ldebug) print*,'dXY_chiral_dt: max(diffus_chiral) =',maxval(diffus_chiral)
         maxdiffus=max(maxdiffus,diffus_chiral)
