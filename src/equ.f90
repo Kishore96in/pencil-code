@@ -738,6 +738,7 @@ module Equ
 !
 !  If doing diagnostics together with the GPU lupdate_courant_dt means to calculate some of the timestep diagnostics
 !  Kishore: why do we need to check lgpu if this subroutine is only used for GPU runs?
+!  Kishore: Touko, do we now need to use lcalc_timestep_constraints here?
 !
       if (lgpu) lupdate_courant_dt = lcourant_dt .and. ltimestep_diagnostics
 
