@@ -2904,7 +2904,7 @@ use Sub, only: dot2_mn
 !
       real, dimension(nx) :: advec_hypermesh_rho
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (ldynamical_diffusion) then
           diffus_diffrho3 = diffus_diffrho3 + diffrho_hyper3_mesh
           advec_hypermesh_rho=0.
@@ -3197,7 +3197,7 @@ use Sub, only: dot2_mn
             fdiff = fdiff + diffrho*(p%del2lnrho+p%glnrho2)
           endif
         endif
-        if (lupdate_courant_dt) diffus_diffrho=diffus_diffrho+diffrho
+        if (lcalc_timestep_constraints) diffus_diffrho=diffus_diffrho+diffrho
         if (headtt) print*,'dlnrho_dt: diffrho=', diffrho
       endif
 !
@@ -3213,7 +3213,7 @@ use Sub, only: dot2_mn
             fdiff = fdiff + kap_tdep*(p%del2lnrho+p%glnrho2)
           endif
         endif
-        if (lupdate_courant_dt) diffus_diffrho=diffus_diffrho+kap_tdep
+        if (lcalc_timestep_constraints) diffus_diffrho=diffus_diffrho+kap_tdep
         if (headtt) print*,'dlnrho_dt: kap-tdep=', kap_tdep
       endif
 !
@@ -3227,7 +3227,7 @@ use Sub, only: dot2_mn
             fdiff = fdiff + diffrho*p%TT**diff_cspeed*(p%del2lnrho+p%glnrho2)
           endif
         endif
-        if (lupdate_courant_dt) diffus_diffrho=diffus_diffrho+diffrho
+        if (lcalc_timestep_constraints) diffus_diffrho=diffus_diffrho+diffrho
         if (headtt) print*,'dlnrho_dt: diffrho=', diffrho
       endif
 !
@@ -3254,7 +3254,7 @@ use Sub, only: dot2_mn
                       p%gshock(:,3)*dlnrhodz_init_z(n) )
           endif
         endif
-        if (lupdate_courant_dt) diffus_diffrho=diffus_diffrho+diffrho_shock*p%shock
+        if (lcalc_timestep_constraints) diffus_diffrho=diffus_diffrho+diffrho_shock*p%shock
         if (headtt) print*,'dlnrho_dt: diffrho_shock=', diffrho_shock
       endif
 !
@@ -3323,7 +3323,7 @@ use Sub, only: dot2_mn
         else
           if (ldiffusion_nolog) fdiff = fdiff + diffrho_hyper3*p%rho1*p%del6rho
         endif
-        if (lupdate_courant_dt) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3
+        if (lcalc_timestep_constraints) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3
         if (headtt) print*,'dlnrho_dt: diffrho_hyper3=', diffrho_hyper3
       endif
 !
@@ -3342,7 +3342,7 @@ use Sub, only: dot2_mn
 !AB: should not just add it to the previous diffus_diffrho3.
           !fdiff = fdiff + diffrho_hyper3*pi5_1*tmp*dline_1(:,j)**5
         enddo
-        if (lupdate_courant_dt) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3*pi4_1*dxmin_pencil**4
+        if (lcalc_timestep_constraints) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3*pi4_1*dxmin_pencil**4
         if (headtt) print*,'dlnrho_dt: diffrho_hyper3=', diffrho_hyper3
       endif
 !
@@ -3383,7 +3383,7 @@ use Sub, only: dot2_mn
           fdiff = fdiff - tmp
         endif
 !  Must divide by dxyz_6 here, because it is multiplied on later.
-        if (lupdate_courant_dt) diffus_diffrho3=diffus_diffrho3 + &
+        if (lcalc_timestep_constraints) diffus_diffrho3=diffus_diffrho3 + &
                  (diffrho_hyper3_aniso(1)*dline_1(:,1)**6 + &
                   diffrho_hyper3_aniso(2)*dline_1(:,2)**6 + &
                   diffrho_hyper3_aniso(3)*dline_1(:,3)**6)/dxyz_6
@@ -3392,7 +3392,7 @@ use Sub, only: dot2_mn
 !
       if (ldiff_hyper3lnrho .or. ldiff_hyper3lnrho_strict) then
         if (.not. ldensity_nolog) fdiff = fdiff + diffrho_hyper3*p%del6lnrho
-        if (lupdate_courant_dt) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3
+        if (lcalc_timestep_constraints) diffus_diffrho3=diffus_diffrho3+diffrho_hyper3
         if (headtt .and. ldiff_hyper3lnrho ) print*,'dlnrho_dt: diffrho_hyper3=', diffrho_hyper3
         if (headtt .and. ldiff_hyper3lnrho_strict ) print*, &
            'dlnrho_dt: diffrho_hyper3_strict=', diffrho_hyper3
@@ -3486,7 +3486,7 @@ use Sub, only: dot2_mn
 !
 !  Multiply diffusion coefficient by Nyquist scale.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         diffus_diffrho = diffus_diffrho*dxyz_2
         if (ldynamical_diffusion .and. ldiff_hyper3_mesh) then
           diffus_diffrho3 = diffus_diffrho3 * sum(abs(dline_1),2)
