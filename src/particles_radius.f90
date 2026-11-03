@@ -108,6 +108,7 @@ module Particles_radius
   integer :: idiag_ieffp=0
 !
   real :: gamma
+! DANGER: dt1_sweepup is never initialized
   real, dimension(nx) :: dt1_sweepup
 !
   contains
@@ -775,7 +776,7 @@ module Particles_radius
 !
 !  Time-step contribution of sweep-up.
 !
-              if (lupdate_courant_dt) dt1_sweepup(ix) = dt1_sweepup(ix) + np_swarm*pi*fp(k,iap)**2*deltavp
+              if (lcalc_timestep_constraints) dt1_sweepup(ix) = dt1_sweepup(ix) + np_swarm*pi*fp(k,iap)**2*deltavp
 !
             endif
 !
@@ -787,7 +788,7 @@ module Particles_radius
 !
 !  Time-step contribution of sweep-up.
 !
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           dt1_sweepup = dt1_sweepup/cdtps
           dt1_max = max(dt1_max,dt1_sweepup)
         endif
