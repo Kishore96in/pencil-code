@@ -597,7 +597,7 @@ module Testfield
 !  and whatever is calculated here
 !
 !DM check if the following is correct in spherical coordinates
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         diffus_eta=etatest*dxyz_2
         maxdiffus=max(maxdiffus,diffus_eta)
       endif
