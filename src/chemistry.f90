@@ -3723,7 +3723,7 @@ module Chemistry
 !
 !  For the timestep calculation, need maximum diffusion
 !
-      if (lupdate_courant_dt .and. (.not. lchemonly)) then
+      if (lcalc_timestep_constraints .and. (.not. lchemonly)) then
         if (.not. lcheminp) then
           diffus_chem = chem_diff*maxval(chem_diff_prefactor)*dxyz_2
         else
@@ -3746,7 +3746,7 @@ module Chemistry
 !
 ! NB: it should be discussed
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lreactions .and.(.not. llsode .or. lchemonly)) then
 !
 !  calculate maximum of *relative* reaction rate if decaying,
