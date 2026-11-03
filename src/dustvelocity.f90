@@ -1077,7 +1077,7 @@ module Dustvelocity
 !
 !  ``uud/dx'' for timestep
 !
-        if (lupdate_courant_dt .and. (ldustdensity.or.ladvection_dust)) then
+        if (lcalc_timestep_constraints .and. (ldustdensity.or.ladvection_dust)) then
           p%advec_uud(:,k)=sum(abs(p%uud(:,:,k))*dline_1,2)
           if ((headtt.or.ldebug) .and. ip<6) &
             print*,'calc_pencils_dustvelocity: max(advec_uud(:,',k,') =',maxval(p%advec_uud(:,k))
@@ -1197,9 +1197,9 @@ module Dustvelocity
           tausg1 = p%rhod(ix,k)*tausd1(ix,k)*p%rho1(ix)
           if (tausgmin/=0.0) tausg1=min(tausg1,tausg1max)
           df(ix+nghost,m,n,iux:iuz) = df(ix+nghost,m,n,iux:iuz) - tausg1*(p%uu(ix,:)-p%uud(ix,:,k))
-          if (lupdate_courant_dt) dt1_max(ix)=max(dt1_max(ix),(tausg1+tausd1(ix,k))/cdtd)
+          if (lcalc_timestep_constraints) dt1_max(ix)=max(dt1_max(ix),(tausg1+tausd1(ix,k))/cdtd)
         else
-          if (lupdate_courant_dt) dt1_max(ix)=max(dt1_max(ix),tausd1(ix,k)/cdtd)
+          if (lcalc_timestep_constraints) dt1_max(ix)=max(dt1_max(ix),tausd1(ix,k)/cdtd)
         endif
       endif
 !
@@ -1237,7 +1237,7 @@ module Dustvelocity
 !
       if (lviscd_simplified) then
         fviscd = fviscd + nud(k)*p%del2ud(ix,:,k)
-        if (lupdate_courant_dt) diffus_nud=diffus_nud+nud(k)*dxyz_2
+        if (lcalc_timestep_constraints) diffus_nud=diffus_nud+nud(k)*dxyz_2
       endif
 !
 !  Viscous force: nud*(del2ud+graddivud/3+2Sd.glnnd)
@@ -1250,7 +1250,7 @@ module Dustvelocity
         else
           fviscd = fviscd + nud(k)*(p%del2ud(ix,:,k)+1/3.*p%graddivud(ix,:,k))
         endif
-        if (lupdate_courant_dt) diffus_nud=diffus_nud+nud(k)*dxyz_2
+        if (lcalc_timestep_constraints) diffus_nud=diffus_nud+nud(k)*dxyz_2
       endif
 !
 !  Viscous force: nud_shock
@@ -1265,7 +1265,7 @@ module Dustvelocity
         tmp2 = nud_shock(k)*p%shock(ix)*tmp
         tmp  = tmp2 + nud_shock(k)*p%divud(ix,k)*p%gshock(ix,:)
         fviscd = fviscd + tmp
-        if (lupdate_courant_dt) diffus_nud=diffus_nud+nud_shock(k)*p%shock*dxyz_2
+        if (lcalc_timestep_constraints) diffus_nud=diffus_nud+nud_shock(k)*p%shock*dxyz_2
       endif
 !
 !  Viscous force: nud_shock simplified (not momentum conserving)
@@ -1275,14 +1275,14 @@ module Dustvelocity
         tmp2 = nud_shock(k)*p%shock(ix)*tmp
         tmp  = tmp2 + nud_shock(k)*p%divud(ix,k)*p%gshock(ix,:)
         fviscd = fviscd + tmp
-        if (lupdate_courant_dt) diffus_nud=diffus_nud+nud_shock(k)*p%shock*dxyz_2
+        if (lcalc_timestep_constraints) diffus_nud=diffus_nud+nud_shock(k)*p%shock*dxyz_2
       endif
 !
 !  Viscous force: nud*del6ud (not momentum-conserving)
 !
       if (lviscd_hyper3_simplified) then
         fviscd = fviscd + nud_hyper3(k)*p%del6ud(ix,:,k)
-        if (lupdate_courant_dt) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
+        if (lcalc_timestep_constraints) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
       endif
 !
 !  Viscous force: polar coordinates
@@ -1291,7 +1291,7 @@ module Dustvelocity
         do j=1,3
           fviscd(j) = fviscd(j) + nud_hyper3(k)*pi4_1*sum(grad6_uud(ix,:,j,k)*dline_1(ix,:)**2)
         enddo
-        if (lupdate_courant_dt) diffus_nud3=diffus_nud3+nud_hyper3(k)*pi4_1*dxmin_pencil**4
+        if (lcalc_timestep_constraints) diffus_nud3=diffus_nud3+nud_hyper3(k)*pi4_1*dxmin_pencil**4
       endif
 !
 !  Viscous force: Axel's mesh formulation
@@ -1300,7 +1300,7 @@ module Dustvelocity
         do j=1,3
           fviscd(j) = fviscd(j) + nud_hyper3_mesh(k)*pi5_1/60.*sum(grad6_uud(ix,:,j,k)*dline_1(ix,:))
         enddo
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           advec_hypermesh_uud=nud_hyper3_mesh(k)*pi5_1*sqrt(dxyz_2)
           advec2_hypermesh=advec2_hypermesh+advec_hypermesh_uud**2   !MR: sum over all species!!!
          endif
@@ -1311,21 +1311,21 @@ module Dustvelocity
       if (lviscd_hyper3_rhod_nud_const) then
         mudrhod1=(nud_hyper3(k)*nd0*md0)/p%rhod(ix,k)   ! = mud/rhod
         fviscd = fviscd + mudrhod1*p%del6ud(ix,:,k)
-        if (lupdate_courant_dt) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
+        if (lcalc_timestep_constraints) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
       endif
 !
 !  Viscous force: nud*(del6ud+S.glnnd), where S_ij=d^5 ud_i/dx_j^5
 !
       if (lviscd_hyper3_nud_const) then
         fviscd = fviscd + nud_hyper3(k)*(p%del6ud(ix,:,k)+p%sdglnnd(ix,:,k))
-        if (lupdate_courant_dt) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
+        if (lcalc_timestep_constraints) diffus_nud3=diffus_nud3+nud_hyper3(k)*dxyz_6
       endif
 !
 !  Add viscous force to dust equation of motion.
 !
       df(ix+nghost,m,n,iudx(k):iudz(k)) = df(ix+nghost,m,n,iudx(k):iudz(k)) + fviscd
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         maxdiffus3=max(maxdiffus3,diffus_nud3)
         maxdiffus=max(maxdiffus,diffus_nud)
         if ((headtt.or.ldebug) .and. (ip<6)) print*,'duud_dt: max(diffus_nud) =',maxval(diffus_nud)
@@ -1403,7 +1403,7 @@ module Dustvelocity
 !  Advective timestep contribution (condition could be narrower as even with dustdensity,
 !                                   there is not always advection).
 !
-      if (lupdate_courant_dt.and.(ldustdensity.or.ladvection_dust)) maxadvec=maxadvec+maxval(p%advec_uud,2)  !MR: sum problematic
+      if (lcalc_timestep_constraints.and.(ldustdensity.or.ladvection_dust)) maxadvec=maxadvec+maxval(p%advec_uud,2)  !MR: sum problematic
 
       call calc_diagnostics_dustvelocity(p)
 !
