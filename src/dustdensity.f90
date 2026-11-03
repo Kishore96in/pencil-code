@@ -2064,7 +2064,7 @@ module Dustdensity
 !
           if (ldiffd_simplified) then
             fdiffd=fdiffd + diffnd_ndustspec(k)*p%del2nd(:,k)
-            if (lupdate_courant_dt) diffus_diffnd=diffus_diffnd+diffnd_ndustspec(k)*dxyz_2
+            if (lcalc_timestep_constraints) diffus_diffnd=diffus_diffnd+diffnd_ndustspec(k)*dxyz_2
           endif
 !
 !  diffusive time step
@@ -2078,7 +2078,7 @@ module Dustdensity
               call del2fj(f,diffnd_anisotropic,ind(k),tmp1)
               fdiffd = fdiffd + tmp1
             endif
-            if (lupdate_courant_dt) diffus_diffnd=diffus_diffnd + &
+            if (lcalc_timestep_constraints) diffus_diffnd=diffus_diffnd + &
                                               (diffnd_anisotropic(1)*dline_1(:,1)**2 + &
                                                diffnd_anisotropic(2)*dline_1(:,2)**2 + &
                                                diffnd_anisotropic(3)*dline_1(:,3)**2)
@@ -2091,7 +2091,7 @@ module Dustdensity
               fdiffd = fdiffd + diffnd_ndustspec(k)*(p%del2nd(:,k) - p%gndglnrho(:,k) - &
                        p%nd(:,k)*p%del2lnrho)
             endif
-            if (lupdate_courant_dt) diffus_diffnd=diffus_diffnd+diffnd_ndustspec(k)*dxyz_2
+            if (lcalc_timestep_constraints) diffus_diffnd=diffus_diffnd+diffnd_ndustspec(k)*dxyz_2
           endif
 !
           if (ldiffd_hyper3) then
@@ -2100,7 +2100,7 @@ module Dustdensity
             else
               fdiffd = fdiffd + diffnd_hyper3*p%del6nd(:,k)
             endif
-            if (lupdate_courant_dt) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*dxyz_6
+            if (lcalc_timestep_constraints) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*dxyz_6
           endif
 !
           if (ldiffd_hyper3_polar) then
@@ -2108,7 +2108,7 @@ module Dustdensity
               call der6(f,ind(k),tmp1,j,IGNOREDX=.true.)
               fdiffd = fdiffd + diffnd_hyper3*pi4_1*tmp1*dline_1(:,j)**2
             enddo
-            if (lupdate_courant_dt) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*pi4_1*dxmin_pencil**4
+            if (lcalc_timestep_constraints) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*pi4_1*dxmin_pencil**4
           endif
 !
           if (ldiffd_hyper3_mesh) then
@@ -2116,7 +2116,7 @@ module Dustdensity
               call der6(f,ind(k),tmp1,j,IGNOREDX=.true.)
               fdiffd = fdiffd + diffnd_hyper3_mesh*pi5_1/60.*tmp1*dline_1(:,j)
             enddo
-            if (lupdate_courant_dt) then 
+            if (lcalc_timestep_constraints) then 
               advec_hypermesh_nd=diffnd_hyper3_mesh*pi5_1*sqrt(dxyz_2)
               advec2_hypermesh=advec2_hypermesh+advec_hypermesh_nd**2
             endif
@@ -2125,16 +2125,16 @@ module Dustdensity
 !
           if (ldiffd_hyper3lnnd) then
             if (ldustdensity_log) fdiffd = fdiffd + diffnd_hyper3*p%del6lnnd(:,k)
-            if (lupdate_courant_dt) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*dxyz_6
+            if (lcalc_timestep_constraints) diffus_diffnd3=diffus_diffnd3+diffnd_hyper3*dxyz_6
           endif
 !
           if (ldiffd_shock) then
             call dot_mn(p%gshock,p%gnd(:,:,k),gshockgnd)
             fdiffd = fdiffd + diffnd_shock*p%shock*p%del2nd(:,k) + diffnd_shock*gshockgnd
-            if (lupdate_courant_dt) diffus_diffnd=diffus_diffnd+diffnd_shock*p%shock*dxyz_2
+            if (lcalc_timestep_constraints) diffus_diffnd=diffus_diffnd+diffnd_shock*p%shock*dxyz_2
           endif
 
-          if (lupdate_courant_dt) then 
+          if (lcalc_timestep_constraints) then 
             maxdiffus=max(maxdiffus,diffus_diffnd)
             maxdiffus3=max(maxdiffus3,diffus_diffnd3)
           endif
