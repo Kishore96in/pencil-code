@@ -105,7 +105,11 @@ module Equ
 !  Print statements when they are first executed.
 !
       headtt = headt .and. lfirst .and. lroot
-      if (.not. lgpu) lupdate_courant_dt = lfirst .and. ldt .and. lcourant_dt
+      if (.not. lgpu) then
+        lupdate_courant_dt = lfirst .and. ldt .and. lcourant_dt
+!       Diagnostics like Rmesh make sense even with fixed dt or with RKF timestepping
+        lcalc_timestep_constraints = lupdate_courant_dt .or. (ldiagnos .and. ltimestep_diagnostics)
+      endif
 !
       if (headtt.or.ldebug) print*,'pde: ENTER'
       if (headtt) call svn_id( &

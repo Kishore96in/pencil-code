@@ -1090,6 +1090,7 @@ module Cdata
   logical :: lchemistry_diag_save
   real    :: scl_factor_target_save,Hp_target_save, appa_target_save
   logical :: ltimestep_diagnostics = .false.
+  logical :: lcalc_timestep_constraints = .false.
 
   real(KIND=rkind8) :: t_save,tspec_save,t_snap_save
   real(KIND=rkind8) :: t_farray_copy=0.  ! time of the data in the last f copy from the GPU
