@@ -2866,7 +2866,7 @@ module Particles
 !
         if (npar_imn(imn)/=0) then
 !
-          if (lupdate_courant_dt) then
+          if (lcalc_timestep_constraints) then
             dt1_drag_dust=0.0
             if (ldragforce_gas_par) dt1_drag_gas=0.0
           endif
@@ -3459,7 +3459,7 @@ module Particles
 !  With drag force on the gas as well, the maximum time-step is set as
 !    dt1_drag = Sum_k[eps_k/tau_k]
 !
-              if (lupdate_courant_dt) then
+              if (lcalc_timestep_constraints) then
                 dt1_drag_dust(ix0-nghost) = max(dt1_drag_dust(ix0-nghost), tausp1_par)
                 if (ldragforce_gas_par) &
                   dt1_drag_gas(ix0-nghost) = dt1_drag_gas(ix0-nghost) + mp_vcell * p%rho1(ix0-nghost) * tausp1_par
@@ -3475,7 +3475,7 @@ module Particles
 !  time-steps are added up to give a valid expression even when the two are
 !  of similar magnitude.
 !
-          if (lupdate_courant_dt) then
+          if (lcalc_timestep_constraints) then
             if (ldragforce_gas_par) then
               dt1_drag=dt1_drag_dust+dt1_drag_gas
             else
@@ -3488,7 +3488,7 @@ module Particles
 !
 !  No particles in this pencil.
 !
-          if (lupdate_courant_dt) dt1_drag=0.0
+          if (lcalc_timestep_constraints) dt1_drag=0.0
         endif
       endif
 !
@@ -3600,8 +3600,7 @@ module Particles
         if (idiag_urel/=0)     call sum_mn_name(urel_sum/npar*nwgrid,idiag_urel)
         if (idiag_dvpx2m/=0 .or. idiag_dvpx2m/=0 .or. idiag_dvpx2m/=0 .or. &
             idiag_dvpm  /=0 .or. idiag_dvpmax/=0) call calculate_rms_speed(fp,ineargrid,p)
-
-        if (idiag_dtdragp/=0.and.(lupdate_courant_dt)) call max_mn_name(dt1_drag,idiag_dtdragp,l_dt=.true.)
+        if (idiag_dtdragp/=0.and.(lcalc_timestep_constraints)) call max_mn_name(dt1_drag,idiag_dtdragp,l_dt=.true.)
       endif
 !
 !  1d-averages. Happens at every it1d timesteps, NOT at every it1
