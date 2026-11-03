@@ -4904,7 +4904,7 @@ module Magnetic
 !
       call calc_pencils_magnetic_fres(f,p)
 !
-      if (lmultithread .and. lupdate_courant_dt) then
+      if (lmultithread .and. lcalc_timestep_constraints) then
         diffus_eta =p%diffus_eta *dxyz_2
         maxdiffus=max(maxdiffus,diffus_eta)
       endif
@@ -5378,7 +5378,7 @@ module Magnetic
 !  Add ``va^2/dx^2'' contribution to timestep.
 !  Consider advective timestep only when lhydro=T.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lhydro.and.(.not.lkinematic).and.llorentzforce) then
           rho1_jxb=p%rho1
           if (rhomin_jxb>0) rho1_jxb=min(rho1_jxb,1/rhomin_jxb)
@@ -5817,7 +5817,7 @@ module Magnetic
             endif
           enddo
         enddo
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           if (ldynamical_diffusion) then
             diffus_eta3 = diffus_eta3 + eta_hyper3_mesh
             advec_hypermesh_aa = 0.0
@@ -6114,7 +6114,7 @@ module Magnetic
         endselect
         if (headtt) print*,'daa_dt: hall_term=',hall_term_
         dAdt=dAdt-hall_term_*p%jxb
-        if (lupdate_courant_dt) then
+        if (lcalc_timestep_constraints) then
           advec_hall=sum(abs(p%uu-hall_term_*p%jj)*dline_1,2)
           if (notanumber(advec_hall)) then
             if (lproc_print) then
@@ -6226,6 +6226,7 @@ module Magnetic
 !  Lorentz force and Ohmic heating terms
 !  should set in entropy lthdiff_Hmax=F and lrhs_max=F & in hydro lcdt_tauf=F as handled here
 !
+!     Kishore: not sure if this must use lcalc_timestep_constraints
       if (lupdate_courant_dt.and.lrhs_max) then
         if (lhydro) then
           do j =1,3
@@ -12227,7 +12228,7 @@ print*,'AXEL2: should not be here (eta) ... '
       if ((.not. ldisp_current) .or. loverride_ee) then
         if (headtt) print*, 'calc_pencils_magnetic_fres: iresistivity=', iresistivity
 !
-        ldiffus_eta2 = lupdate_courant_dt .or. lpencil(i_diffus_eta2)
+        ldiffus_eta2 = lcalc_timestep_constraints .or. lpencil(i_diffus_eta2)
         ldiffus_eta3 = lupdate_courant_dt .or. lpencil(i_diffus_eta3)
         if (ldiffus_eta2.or.ldiffus_eta3) then
           p%diffus_eta2=0.0
