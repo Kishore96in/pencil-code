@@ -290,7 +290,7 @@ module Special
         q%uu_jet(:,2) = ujet(:,m-m1+1,2)
       endif
 
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         advec_cg2 = (p%rho + h0(l1:l2,m))**2 * dxyz_2
         if (notanumber(advec_cg2)) print*, 'advec_cg2  =',advec_cg2
         advec2    = advec2 + advec_cg2
