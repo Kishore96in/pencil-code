@@ -1442,8 +1442,8 @@ module Viscosity
       fvisc3=0.0
       if (lpencil(i_visc_heat)) p%visc_heat=0.0
 
-      ldiffus_total = lupdate_courant_dt .or. lpencil(i_diffus_total)
-      ldiffus_total3 = lupdate_courant_dt .or. lpencil(i_diffus_total3)
+      ldiffus_total = lcalc_timestep_constraints .or. lpencil(i_diffus_total)
+      ldiffus_total3 = lcalc_timestep_constraints .or. lpencil(i_diffus_total3)
       if (ldiffus_total.or.ldiffus_total3) then
         p%diffus_total=0.0
         p%diffus_total2=0.0
@@ -1974,7 +1974,7 @@ module Viscosity
           if (headtt) call warning('calc_pencils_viscosity', 'viscous heating '// &
                                    'not implemented for lvisc_hyper2_simplified')
         endif
-        if (lupdate_courant_dt) p%diffus_total2=p%diffus_total2+nu_hyper2
+        if (lcalc_timestep_constraints) p%diffus_total2=p%diffus_total2+nu_hyper2
       endif
 !
 !  viscous force: nu_hyper3*del6v (not momentum-conserving)
@@ -1996,7 +1996,7 @@ module Viscosity
           if (headtt) call warning('calc_pencils_viscosity', 'viscous heating '// &
                                    'not implemented for lvisc_hyper2_simplified')
         endif
-        if (lupdate_courant_dt) p%diffus_total2=p%diffus_total2+nu_tdep
+        if (lcalc_timestep_constraints) p%diffus_total2=p%diffus_total2+nu_tdep
       endif
 !
       if (lvisc_hyper3_simplified_tdep) then
@@ -2432,7 +2432,7 @@ module Viscosity
 !
 !  Calculate max total diffusion coefficient for timestep calculation etc.
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
 
         diffus_nu = p%diffus_total*dxyz_2
         maxdiffus =max(maxdiffus,diffus_nu)
@@ -2802,7 +2802,7 @@ module Viscosity
 !  Calculate maximum heating for time step constraint or diagnostics
 !  (only done on the first substep).
 !
-      if (lupdate_courant_dt .or. ldiagnos) Hmax=Hmax+p%visc_heat
+      if (lcalc_timestep_constraints) Hmax=Hmax+p%visc_heat
 !
     endsubroutine calc_viscous_heat
 !***********************************************************************
@@ -2853,8 +2853,8 @@ module Viscosity
       real, dimension (nx,3):: nuD2uxb, fluxv
       logical :: ldiffus_total, ldiffus_total3
 !
-      ldiffus_total = lupdate_courant_dt .or. lpencil(i_diffus_total)
-      ldiffus_total3 = lupdate_courant_dt .or. lpencil(i_diffus_total3)
+      ldiffus_total = lcalc_timestep_constraints .or. lpencil(i_diffus_total)
+      ldiffus_total3 = lcalc_timestep_constraints .or. lpencil(i_diffus_total3)
 !
 !  Diagnostic output
 !
