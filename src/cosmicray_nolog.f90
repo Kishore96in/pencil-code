@@ -364,7 +364,7 @@ module Cosmicray
 !
 !  For the timestep calculation, need maximum diffusion
 !
-      if (lupdate_courant_dt) then
+      if (lcalc_timestep_constraints) then
         if (lvariable_tensor_diff)then
           diffus_cr=max(cosmicray_diff,vKperp,vKpara)*dxyz_2
         elseif (lcosmicrayflux) then
