@@ -2512,6 +2512,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !
 !  Calculate del2 of a scalar, get scalar.
 !   8-may-09/nils: adapted from del2
+!  11-Nov-2026/Kishore: corrected cylindrical at r=0
 !
       use Deriv, only: der,der2
 !
