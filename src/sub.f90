@@ -2490,7 +2490,12 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !
       if (lcylindrical_coords) then
         call der(f,k,tmp,1)
-        del2f=del2f+tmp*rcyl_mn1
+        where (rcyl_mn == 0)
+!         lim_{r\to 0} (1/r) df/dr = d2f/dr2
+          del2f = del2f + d2fdx
+        elsewhere
+          del2f=del2f+tmp*rcyl_mn1
+        endwhere
       endif
 !
       if (lspherical_coords) then
