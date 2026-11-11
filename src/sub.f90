@@ -2473,6 +2473,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !
 !  12-sep-97/axel: coded
 !   7-mar-07/wlad: added cylindrical coordinates
+!  11-Nov-2026/Kishore: corrected cylindrical at r=0
 !
       use Deriv, only: der,der2
 !
