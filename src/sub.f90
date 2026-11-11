@@ -2324,6 +2324,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !  21-feb-07/axel: corrected spherical coordinates
 !  14-mar-07/wlad: added cylindrical coordinates
 !  20-sep-13/ccyang: added optional argument ignoredx
+!  11-Nov-2026/Kishore: corrected cylindrical at r=0
 !
       use Deriv, only: der
 !
@@ -2332,7 +2333,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
       integer, intent(in) :: k
       logical, intent(in), optional :: ignoredx
 !
-      real, dimension(nx) :: tmp1, tmp2
+      real, dimension(nx) :: tmp1, tmp2, dfphidr
       logical :: igdx
       integer :: k1
 !
@@ -2352,9 +2353,9 @@ subroutine dot_mn_sv_pencil(a,b,c)
       call der(f, k1+3, tmp2, 1, ignoredx=igdx)
       g(:,2)=tmp1-tmp2
 !
-      call der(f, k1+2, tmp1, 1, ignoredx=igdx)
+      call der(f, k1+2, dfphidr, 1, ignoredx=igdx)
       call der(f, k1+1, tmp2, 2, ignoredx=igdx)
-      g(:,3)=tmp1-tmp2
+      g(:,3)=dfphidr-tmp2
 !
 !  Adjustments for spherical coordinate system.
 !
@@ -2365,7 +2366,12 @@ subroutine dot_mn_sv_pencil(a,b,c)
       endif
 !
       if (.not. igdx .and. lcylindrical_coords) then
-        g(:,3)=g(:,3)+f(l1:l2,m,n,k1+2)*rcyl_mn1
+        where (rcyl_mn == 0)
+!         lim_{r\to 0} f/r = df/dr
+          g(:,3) = g(:,3) + dfphidr
+        elsewhere
+          g(:,3) = g(:,3) + f(l1:l2,m,n,k1+2)*rcyl_mn1
+        endwhere
       endif
 !
     endsubroutine curl
