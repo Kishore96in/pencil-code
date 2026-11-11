@@ -2212,6 +2212,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !  21-feb-07/axel: corrected spherical coordinates
 !  14-mar-07/wlad: added cylindrical coordinates
 !  16-jun-16/fred: added option to use covariant derivative bij
+!  11-Nov-2026/Kishore: corrected cylindrical at r=0
 !
       use General, only: loptest
 !
@@ -2251,13 +2252,24 @@ subroutine dot_mn_sv_pencil(a,b,c)
       endif
 !
 !  Adjustments for cylindrical coordinate system.
+!
+      if (lcylindrical_coords .and. .not.loptest(lcovariant_derivative)) then
+        if (.not. present(a)) call fatal_error('curl_mn', &
+          '`a` must be provided to calculate curl in cylindrical coordinates')
+!
+          where (rcyl_mn == 0)
+!           lim_{r\to 0} f/r = df/dr
+            b(:,3) = b(:,3) + aij(a1:a2,2,1)
+          elsewhere
+            b(:,3) = b(:,3) + a(a1:a2,2)*rcyl_mn1
+          endwhere
+!
+!  Kishore: commented out below in favour of the more general one above.
 !  If we go all the way to the center, we need to put a regularity condition.
 !  We do this here currently up to second order, and only for curl_mn.
 !
-      if (lcylindrical_coords.and.present(a)) then
-        if (.not.loptest(lcovariant_derivative)) b(:,3)=b(:,3)+a(a1:a2,2)*rcyl_mn1
-        if (rcyl_mn(1)==0.) b(i1,3)=(360.*b(i2,3)-450.*b(i3,3)+400.*b(i4,3) &
-                                    -225.*b(i5,3)+72.*b(i6,3)-10.*b(i7,3))/147.
+!           if (rcyl_mn(1)==0.) b(i1,3)=(360.*b(i2,3)-450.*b(i3,3)+400.*b(i4,3) &
+!                                     -225.*b(i5,3)+72.*b(i6,3)-10.*b(i7,3))/147.
       endif
 !
     endsubroutine curl_mn
