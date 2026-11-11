@@ -1828,6 +1828,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !                      always stored in ascending order,
 !                      e.g., [v_x,v_z] or [v_y,v_z].
 !  16-nov-16/MR: modifications for non-Cartesian coordinates.
+!  11-Nov-2026/Kishore: corrected cylindrical at r=0 (only for ldiff_fluxes=F)
 !
       use Deriv, only: der
       use General, only: loptest
@@ -1843,7 +1844,7 @@ subroutine dot_mn_sv_pencil(a,b,c)
 !
       integer :: k1,i
       integer, dimension(3) :: inds_
-      real, dimension(nx) :: tmp
+      real, dimension(nx) :: tmp, dfrdr
       integer, save :: indr=0, indth=0
       logical, save :: s0=.true.
 !
@@ -1880,15 +1881,23 @@ subroutine dot_mn_sv_pencil(a,b,c)
         else
           inds_=(/k,k+1,k+2/)
         endif
-        call der(f,inds_(1),tmp,1)
-        g=tmp
+        call der(f,inds_(1),dfrdr,1)
+        g=dfrdr
         call der(f,inds_(2),tmp,2)
         g=g+tmp
         call der(f,inds_(3),tmp,3)
         g=g+tmp
-
+!
         if (lspherical_coords) g=g+r1_mn*(2.*f(l1:l2,m,n,inds_(1))+cotth(m)*f(l1:l2,m,n,inds_(2)))
-        if (lcylindrical_coords) g=g+rcyl_mn1*f(l1:l2,m,n,inds_(1))
+!
+        if (lcylindrical_coords) then
+          where (rcyl_mn == 0)
+!           lim_{r\to 0} f/r = df/dr
+            g = g + dfrdr
+          elsewhere
+            g = g + rcyl_mn1*f(l1:l2,m,n,inds_(1))
+          endwhere
+        endif
 !
       endif
 !
