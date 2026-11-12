@@ -3,6 +3,9 @@
 !  This module takes care of massive parallel HDF5 file Input/Output.
 !  We use here only F95 and MPI features for HPC-friendly behaviour.
 !
+!  12-Nov-2026/Kishore: set no_attrs hint to reduce storage overhead.
+!  12-Nov-2026/Kishore: modified to use the SWMR feature to reduce chances of corrupt files (requires HDF5 > 2.0.0)
+!
 module HDF5_IO
 !
   use Cdata
@@ -20,7 +23,7 @@ module HDF5_IO
   private
 !
   integer :: h5_err
-  integer(HID_T) :: h5_file, h5_dset, h5_plist, h5_fspace, h5_mspace, h5_dspace, h5_ntype, h5_dptype, h5_group
+  integer(HID_T) :: h5_file, h5_dset, h5_plist, h5_fspace, h5_mspace, h5_dspace, h5_ntype, h5_dptype, h5_group, h5_dcplist_noattr
   integer, parameter :: n_dims = 3
   integer(kind=8), dimension(n_dims+1) :: local_size, local_subsize, local_start
   integer(kind=8), dimension(n_dims+1) :: global_size, global_start
@@ -114,7 +117,16 @@ module HDF5_IO
       endif
 !
       call h5eset_auto_f(1,h5_err)   ! enable error stack printing
-
+!
+!     Don't pre-allocate space for dataset attributes (we currently don't use
+!     attributes at all). Reduces the file size for small (<64KB) datasets.
+!
+      !TODO: not sure if this belongs here or in init_hdf5
+      call h5pcreate_f(H5P_DATASET_CREATE_F, h5_dcplist_noattr, h5_err)
+      call check_error (h5_err, 'create dataset creation properties list', caller='initialize_hdf5')
+      call h5pset_dset_no_attrs_hint_f(h5_dcplist_noattr, .true., h5_err)
+      call check_error (h5_err, 'set no_attr hint for dataset creation properties list', caller='initialize_hdf5')
+!
     endsubroutine initialize_hdf5
 !***********************************************************************
     subroutine init_hdf5
@@ -893,7 +905,7 @@ module HDF5_IO
         call check_error (h5_err, 'open string dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_strtype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_strtype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create string dataset', name)
       endif
       ! write dataset
@@ -949,7 +961,7 @@ module HDF5_IO
         call check_error (h5_err, 'open integer dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), H5T_NATIVE_INTEGER, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), H5T_NATIVE_INTEGER, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create integer dataset', name)
       endif
       ! write dataset
@@ -1015,7 +1027,7 @@ module HDF5_IO
         call check_error (h5_err, 'open integer dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), H5T_NATIVE_INTEGER, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), H5T_NATIVE_INTEGER, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1098,7 +1110,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       ! write dataset
@@ -1168,7 +1180,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1243,7 +1255,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1349,7 +1361,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1425,7 +1437,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       ! write dataset
@@ -1481,7 +1493,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1561,7 +1573,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       ! write dataset
@@ -1604,7 +1616,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1672,7 +1684,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       ! write dataset
@@ -1720,7 +1732,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create the dataset
-        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_ntype, h5_fspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       call h5sclose_f (h5_fspace, h5_err)
@@ -1809,7 +1821,7 @@ module HDF5_IO
         call check_error (h5_err, 'open dataset', name)
       else
         ! create dataset
-        call h5dcreate_f (h5_file, trim (name), h5_dptype, h5_dspace, h5_dset, h5_err)
+        call h5dcreate_f (h5_file, trim (name), h5_dptype, h5_dspace, h5_dset, h5_err, dcpl_id=h5_dcplist_noattr)
         call check_error (h5_err, 'create dataset', name)
       endif
       ! write dataset
