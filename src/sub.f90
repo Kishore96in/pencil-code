@@ -9121,8 +9121,14 @@ if (notanumber(f(ll,mm,2:mz-2,iff))) print*, 'DIFFZ:k,ll,mm=', k,ll,mm
       sij(:,3,2)=sij(:,2,3)
       sij(:,3,3)=sij(:,3,3)+r1_mn*uu(:,1)+cotth(m)*r1_mn*uu(:,2)
     elseif (lcylindrical_coords) then
-      sij(:,1,2)=sij(:,1,2)-.5*rcyl_mn1*uu(:,2)
-      sij(:,2,2)=sij(:,2,2)+.5*rcyl_mn1*uu(:,1)
+      where (rcyl_mn==0)
+!       lim_{r\to 0} f/r = df/dr
+        sij(:,1,2)=sij(:,1,2)-.5*uij(:,2,1)
+        sij(:,2,2)=sij(:,2,2)+.5*uij(:,1,1)
+      elsewhere
+        sij(:,1,2)=sij(:,1,2)-.5*rcyl_mn1*uu(:,2)
+        sij(:,2,2)=sij(:,2,2)+.5*rcyl_mn1*uu(:,1)
+      endwhere
       sij(:,2,1)=sij(:,1,2)
     endif
 !
